@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chattup - Made by Swampod Sarkar</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+    <style>
+        :root {
+            --primary-color: #128C7E;
+            --primary-dark: #075E54;
+            --secondary-color: #25D366;
+            --light-color: #DCF8C6;
+            --dark-color: #333;
+            --gray-color: #ECE5DD;
+            --white-color: #fff;
+            --online-color: #4CAF50;
+            --offline-color: #E53935;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--gray-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--primary-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-screen.hidden {
+            display: none;
+        }
+
+        .loading-animation {
+            width: 80px;
+            height: 80px;
+            border: 8px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--white-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--white-color);
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .made-by {
+            position: absolute;
+            bottom: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        /* Auth Screen */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--primary-dark);
+        }
+
+        .auth-box {
+            background-color: var(--white-color);
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .auth-title {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .auth-button {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--primary-color);
+            color: var(--white-color);
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .auth-button:hover {
+            background-color: var(--primary-dark);
+        }
+
+        /* Main App */
+        .app-container {
+            display: none;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 30%;
+            background-color: var(--white-color);
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: var(--primary-dark);
+            color: var(--white-color);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            color: var(--white-color);
+            font-weight: bold;
+        }
+
+        .user-name {
+            font-weight: 500;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: var(--white-color);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .search-bar {
+            padding: 10px;
+            background-color: var(--white-color);
+            border-bottom: 1px solid #ddd;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 15px;
+            border: none;
+            background-color: var(--gray-color);
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            display: flex;
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .chat-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .chat-item.active {
+            background-color: #e5e5e5;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+            color: var(--white-color);
+            font-weight: bold;
+        }
+
+        .chat-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .chat-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .chat-last-message {
+            font-size: 13px;
+            color: #777;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chat-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 5px;
+            display: inline-block;
+        }
+
+        .online {
+            background-color: var(--online-color);
+        }
+
+        .offline {
+            background-color: var(--offline-color);
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--gray-color);
+        }
+
+        .chat-header {
+            background-color: var(--white-color);
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .chat-header-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            color: var(--white-color);
+            font-weight: bold;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-header-name {
+            font-weight: 500;
+        }
+
+        .chat-header-status {
+            font-size: 12px;
+            color: #777;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
+            background-repeat: repeat;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+            max-width: 70%;
+        }
+
+        .message.sent {
+            align-items: flex-end;
+            margin-left: auto;
+        }
+
+        .message.received {
+            align-items: flex-start;
+            margin-right: auto;
+        }
+
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 7.5px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .sent .message-bubble {
+            background-color: var(--light-color);
+            border-top-right-radius: 0;
+        }
+
+        .received .message-bubble {
+            background-color: var(--white-color);
+            border-top-left-radius: 0;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 3px;
+            text-align: right;
+        }
+
+        .message-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 7.5px;
+            cursor: pointer;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: var(--white-color);
+            align-items: center;
+        }
+
+        .attachment-btn, .send-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 24px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: none;
+            border-radius: 20px;
+            background-color: var(--gray-color);
+            font-size: 16px;
+            resize: none;
+            max-height: 100px;
+        }
+
+        /* Add Friend Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--white-color);
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-title {
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            font-size: 20px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .modal-button {
+            padding: 8px 15px;
+            margin-left: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel-btn {
+            background-color: #f5f5f5;
+        }
+
+        .confirm-btn {
+            background-color: var(--primary-color);
+            color: var(--white-color);
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--primary-dark);
+            color: var(--white-color);
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 100;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+            }
+            .chat-area {
+                display: none;
+            }
+            .chat-area.active {
+                display: flex;
+            }
+        }
+
+        /* Group creation */
+        .group-creation {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .create-group-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen">
+        <div class="loading-animation"></div>
+        <div class="loading-text">Loading Chattup</div>
+        <div class="made-by">Made by Swampod Sarkar</div>
+    </div>
+
+    <!-- Auth Screen -->
+    <div class="auth-container" id="auth-container">
+        <div class="auth-box">
+            <h1 class="auth-title">Welcome to Chattup</h1>
+            <input type="text" id="username-input" class="auth-input" placeholder="Enter your username">
+            <button id="login-button" class="auth-button">Login</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div class="app-container" id="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="header">
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">U</div>
+                    <div class="user-name" id="user-name">User</div>
+                </div>
+                <button class="logout-btn" id="logout-button">
+                    <span class="material-icons">logout</span>
+                </button>
+            </div>
+
+            <div class="group-creation">
+                <button class="create-group-btn" id="create-group-btn">
+                    <span class="material-icons">group_add</span> Create New Group
+                </button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" class="search-input" placeholder="Search or start new chat">
+            </div>
+
+            <div class="chat-list" id="chat-list">
+                <!-- Chats will be added here dynamically -->
+            </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="chat-area" id="chat-area">
+            <div class="chat-header">
+                <div class="chat-header-avatar" id="chat-header-avatar">C</div>
+                <div class="chat-header-info">
+                    <div class="chat-header-name" id="chat-header-name">Chat Name</div>
+                    <div class="chat-header-status" id="chat-header-status">Online</div>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be added here dynamically -->
+            </div>
+
+            <div class="chat-input">
+                <button class="attachment-btn" id="attachment-btn">
+                    <span class="material-icons">attach_file</span>
+                </button>
+                <input type="file" id="file-input" style="display: none;" accept="image/*">
+                <textarea class="message-input" id="message-input" placeholder="Type a message"></textarea>
+                <button class="send-btn" id="send-button">
+                    <span class="material-icons">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Friend Modal -->
+    <div class="modal" id="add-friend-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Add Friend</h2>
+            <input type="text" class="modal-input" id="friend-username-input" placeholder="Enter friend's username">
+            <div class="modal-buttons">
+                <button class="modal-button cancel-btn" id="cancel-add-friend">Cancel</button>
+                <button class="modal-button confirm-btn" id="confirm-add-friend">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Group Modal -->
+    <div class="modal" id="create-group-modal">
+        <div class="modal-content">
+            <h2 class="modal-title">Create Group</h2>
+            <input type="text" class="modal-input" id="group-name-input" placeholder="Enter group name">
+            <div id="friends-list-container">
+                <!-- Friends will be listed here with checkboxes -->
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-button cancel-btn" id="cancel-create-group">Cancel</button>
+                <button class="modal-button confirm-btn" id="confirm-create-group">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        New message received!
+    </div>
+
+    <script>
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJ0r_Nb9IplADBNNsFIgbqb01kcbGvuso",
+            authDomain: "we-call-430e1.firebaseapp.com",
+            databaseURL: "https://we-call-430e1-default-rtdb.firebaseio.com",
+            projectId: "we-call-430e1",
+            storageBucket: "we-call-430e1.appspot.com",
+            messagingSenderId: "398312328918",
+            appId: "1:398312328918:web:4ce69dd9927a9e5b9fc377",
+            measurementId: "G-S3QGZ2M8RX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        const storage = firebase.storage();
+
+        // DOM Elements
+        const loadingScreen = document.querySelector('.loading-screen');
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const usernameInput = document.getElementById('username-input');
+        const loginButton = document.getElementById('login-button');
+        const logoutButton = document.getElementById('logout-button');
+        const userAvatar = document.getElementById('user-avatar');
+        const userName = document.getElementById('user-name');
+        const chatList = document.getElementById('chat-list');
+        const chatArea = document.getElementById('chat-area');
+        const chatHeaderAvatar = document.getElementById('chat-header-avatar');
+        const chatHeaderName = document.getElementById('chat-header-name');
+        const chatHeaderStatus = document.getElementById('chat-header-status');
+        const chatMessages = document.getElementById('chat-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const attachmentBtn = document.getElementById('attachment-btn');
+        const fileInput = document.getElementById('file-input');
+        const addFriendModal = document.getElementById('add-friend-modal');
+        const friendUsernameInput = document.getElementById('friend-username-input');
+        const cancelAddFriend = document.getElementById('cancel-add-friend');
+        const confirmAddFriend = document.getElementById('confirm-add-friend');
+        const createGroupBtn = document.getElementById('create-group-btn');
+        const createGroupModal = document.getElementById('create-group-modal');
+        const groupNameInput = document.getElementById('group-name-input');
+        const friendsListContainer = document.getElementById('friends-list-container');
+        const cancelCreateGroup = document.getElementById('cancel-create-group');
+        const confirmCreateGroup = document.getElementById('confirm-create-group');
+        const notification = document.getElementById('notification');
+
+        // App State
+        let currentUser = null;
+        let currentChat = null;
+        let friends = [];
+        let groups = [];
+        let chats = [];
+        let onlineUsers = {};
+
+        // Initialize the app
+        function init() {
+            // Hide loading screen after 2 seconds (simulate loading)
+            setTimeout(() => {
+                loadingScreen.classList.add('hidden');
+                checkAuthState();
+            }, 2000);
+
+            // Event Listeners
+            loginButton.addEventListener('click', handleLogin);
+            logoutButton.addEventListener('click', handleLogout);
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            attachmentBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileUpload);
+            confirmAddFriend.addEventListener('click', addFriend);
+            cancelAddFriend.addEventListener('click', () => addFriendModal.style.display = 'none');
+            createGroupBtn.addEventListener('click', () => {
+                groupNameInput.value = '';
+                renderFriendsListForGroup();
+                createGroupModal.style.display = 'flex';
+            });
+            cancelCreateGroup.addEventListener('click', () => createGroupModal.style.display = 'none');
+            confirmCreateGroup.addEventListener('click', createGroup);
+        }
+
+        // Check auth state
+        function checkAuthState() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    // User is signed in
+                    currentUser = user;
+                    setupUser(user.uid);
+                    authContainer.style.display = 'none';
+                    appContainer.style.display = 'flex';
+                    listenForUserUpdates(user.uid);
+                    listenForOnlineStatus();
+                } else {
+                    // No user is signed in
+                    authContainer.style.display = 'flex';
+                    appContainer.style.display = 'none';
+                }
+            });
+        }
+
+        // Handle login
+        function handleLogin() {
+            const username = usernameInput.value.trim();
+            if (!username) {
+                showNotification('Please enter a username');
+                return;
+            }
+
+            // Sign in anonymously
+            auth.signInAnonymously()
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    return database.ref('users/' + user.uid).set({
+                        username: username,
+                        online: true,
+                        lastSeen: Date.now()
+                    });
+                })
+                .catch(error => {
+                    console.error('Login error:', error);
+                    showNotification('Login failed. Please try again.');
+                });
+        }
+
+        // Handle logout
+        function handleLogout() {
+            if (currentUser) {
+                // Update user status to offline
+                database.ref('users/' + currentUser.uid).update({
+                    online: false,
+                    lastSeen: Date.now()
+                }).then(() => {
+                    auth.signOut();
+                });
+            }
+        }
+
+        // Setup user after login
+        function setupUser(userId) {
+            database.ref('users/' + userId).once('value').then(snapshot => {
+                const userData = snapshot.val();
+                if (userData) {
+                    // Display user info
+                    userName.textContent = userData.username;
+                    userAvatar.textContent = userData.username.charAt(0).toUpperCase();
+                    userAvatar.style.backgroundColor = getAvatarColor(userData.username);
+
+                    // Load friends and chats
+                    loadFriends(userId);
+                    loadGroups(userId);
+                }
+            });
+        }
+
+        // Listen for user updates
+        function listenForUserUpdates(userId) {
+            database.ref('users/' + userId).on('value', snapshot => {
+                const userData = snapshot.val();
+                if (userData) {
+                    userName.textContent = userData.username;
+                    userAvatar.textContent = userData.username.charAt(0).toUpperCase();
+                    userAvatar.style.backgroundColor = getAvatarColor(userData.username);
+                }
+            });
+        }
+
+        // Listen for online status of users
+        function listenForOnlineStatus() {
+            database.ref('users').on('value', snapshot => {
+                const users = snapshot.val();
+                onlineUsers = {};
+                
+                if (users) {
+                    Object.keys(users).forEach(userId => {
+                        onlineUsers[userId] = users[userId].online;
+                    });
+                    
+                    // Update chat list to reflect online status
+                    updateChatListStatus();
+                    
+                    // Update current chat header if it's a private chat
+                    if (currentChat && currentChat.type === 'private') {
+                        updateChatHeaderStatus(currentChat);
+                    }
+                }
+            });
+        }
+
+        // Load user's friends
+        function loadFriends(userId) {
+            database.ref('friends/' + userId).on('value', snapshot => {
+                friends = [];
+                const friendsData = snapshot.val();
+                
+                if (friendsData) {
+                    Object.keys(friendsData).forEach(friendId => {
+                        friends.push({
+                            id: friendId,
+                            ...friendsData[friendId]
+                        });
+                    });
+                    
+                    // Load chats for each friend
+                    loadPrivateChats(userId);
+                }
+            });
+        }
+
+        // Load private chats
+        function loadPrivateChats(userId) {
+            chats = chats.filter(chat => chat.type !== 'private');
+            
+            friends.forEach(friend => {
+                const chatId = generateChatId(userId, friend.id);
+                
+                database.ref('chats/' + chatId).on('value', snapshot => {
+                    const chatData = snapshot.val();
+                    
+                    if (chatData) {
+                        // Check if this chat already exists
+                        const existingChatIndex = chats.findIndex(c => c.id === chatId);
+                        
+                        if (existingChatIndex >= 0) {
+                            // Update existing chat
+                            chats[existingChatIndex] = {
+                                id: chatId,
+                                type: 'private',
+                                participants: [userId, friend.id],
+                                friendId: friend.id,
+                                friendName: friend.username,
+                                lastMessage: chatData.lastMessage,
+                                lastMessageTime: chatData.lastMessageTime,
+                                unreadCount: chatData[`unread_${userId}`] || 0
+                            };
+                        } else {
+                            // Add new chat
+                            chats.push({
+                                id: chatId,
+                                type: 'private',
+                                participants: [userId, friend.id],
+                                friendId: friend.id,
+                                friendName: friend.username,
+                                lastMessage: chatData.lastMessage,
+                                lastMessageTime: chatData.lastMessageTime,
+                                unreadCount: chatData[`unread_${userId}`] || 0
+                            });
+                        }
+                        
+                        // Sort chats by last message time
+                        chats.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
+                        renderChatList();
+                    }
+                });
+            });
+        }
+
+        // Load user's groups
+        function loadGroups(userId) {
+            database.ref('userGroups/' + userId).on('value', snapshot => {
+                groups = [];
+                const groupsData = snapshot.val();
+                
+                if (groupsData) {
+                    Object.keys(groupsData).forEach(groupId => {
+                        groups.push({
+                            id: groupId,
+                            name: groupsData[groupId].name
+                        });
+                        
+                        // Load group chats
+                        loadGroupChat(groupId);
+                    });
+                }
+            });
+        }
+
+        // Load group chat
+        function loadGroupChat(groupId) {
+            database.ref('groupChats/' + groupId).on('value', snapshot => {
+                const groupData = snapshot.val();
+                
+                if (groupData) {
+                    // Check if this group already exists in chats
+                    const existingChatIndex = chats.findIndex(c => c.id === groupId);
+                    
+                    if (existingChatIndex >= 0) {
+                        // Update existing group chat
+                        chats[existingChatIndex] = {
+                            id: groupId,
+                            type: 'group',
+                            name: groupData.name,
+                            lastMessage: groupData.lastMessage,
+                            lastMessageTime: groupData.lastMessageTime,
+                            unreadCount: groupData[`unread_${currentUser.uid}`] || 0
+                        };
+                    } else {
+                        // Add new group chat
+                        chats.push({
+                            id: groupId,
+                            type: 'group',
+                            name: groupData.name,
+                            lastMessage: groupData.lastMessage,
+                            lastMessageTime: groupData.lastMessageTime,
+                            unreadCount: groupData[`unread_${currentUser.uid}`] || 0
+                        });
+                    }
+                    
+                    // Sort chats by last message time
+                    chats.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
+                    renderChatList();
+                }
+            });
+        }
+
+        // Render chat list
+        function renderChatList() {
+            chatList.innerHTML = '';
+            
+            // Add "Add Friend" button
+            const addFriendItem = document.createElement('div');
+            addFriendItem.className = 'chat-item';
+            addFriendItem.innerHTML = `
+                <div class="chat-avatar" style="background-color: var(--primary-color);">
+                    <span class="material-icons">person_add</span>
+                </div>
+                <div class="chat-info">
+                    <div class="chat-name">Add Friend</div>
+                    <div class="chat-last-message">Click to add a new friend</div>
+                </div>
+            `;
+            addFriendItem.addEventListener('click', () => {
+                friendUsernameInput.value = '';
+                addFriendModal.style.display = 'flex';
+            });
+            chatList.appendChild(addFriendItem);
+            
+            // Add chats
+            chats.forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.className = `chat-item ${currentChat && currentChat.id === chat.id ? 'active' : ''}`;
+                
+                let avatarText, chatName, lastMessage, time;
+                
+                if (chat.type === 'private') {
+                    avatarText = chat.friendName.charAt(0).toUpperCase();
+                    chatName = chat.friendName;
+                    lastMessage = chat.lastMessage || 'No messages yet';
+                } else {
+                    avatarText = chat.name.charAt(0).toUpperCase();
+                    chatName = chat.name;
+                    lastMessage = chat.lastMessage || 'No messages yet';
+                }
+                
+                time = formatTime(chat.lastMessageTime);
+                
+                chatItem.innerHTML = `
+                    <div class="chat-avatar" style="background-color: ${getAvatarColor(chatName)};">${avatarText}</div>
+                    <div class="chat-info">
+                        <div class="chat-name">${chatName}
+                            ${chat.type === 'private' ? `<span class="status-indicator ${onlineUsers[chat.friendId] ? 'online' : 'offline'}"></span>` : ''}
+                        </div>
+                        <div class="chat-last-message">${lastMessage}</div>
+                        <div class="chat-time">${time}</div>
+                    </div>
+                    ${chat.unreadCount > 0 ? `<div class="unread-badge">${chat.unreadCount}</div>` : ''}
+                `;
+                
+                chatItem.addEventListener('click', () => openChat(chat));
+                chatList.appendChild(chatItem);
+            });
+        }
+
+        // Update chat list status indicators
+        function updateChatListStatus() {
+            const chatItems = chatList.querySelectorAll('.chat-item');
+            
+            chats.forEach((chat, index) => {
+                if (chat.type === 'private' && chatItems[index + 1]) { // +1 because of the "Add Friend" item
+                    const statusIndicator = chatItems[index + 1].querySelector('.status-indicator');
+                    if (statusIndicator) {
+                        statusIndicator.className = `status-indicator ${onlineUsers[chat.friendId] ? 'online' : 'offline'}`;
+                    }
+                }
+            });
+        }
+
+        // Open a chat
+        function openChat(chat) {
+            currentChat = chat;
+            renderChatList();
+            
+            // Update chat header
+            if (chat.type === 'private') {
+                chatHeaderName.textContent = chat.friendName;
+                chatHeaderAvatar.textContent = chat.friendName.charAt(0).toUpperCase();
+                chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.friendName);
+                updateChatHeaderStatus(chat);
+            } else {
+                chatHeaderName.textContent = chat.name;
+                chatHeaderAvatar.textContent = chat.name.charAt(0).toUpperCase();
+                chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.name);
+                chatHeaderStatus.textContent = 'Group';
+            }
+            
+            // Load messages
+            loadMessages(chat.id, chat.type);
+            
+            // Mark messages as read
+            if (chat.unreadCount > 0) {
+                markMessagesAsRead(chat.id, chat.type);
+            }
+            
+            // Show chat area on mobile
+            if (window.innerWidth <= 768) {
+                document.querySelectorAll('.chat-area').forEach(el => el.classList.remove('active'));
+                chatArea.classList.add('active');
+            }
+        }
+
+        // Update chat header status
+        function updateChatHeaderStatus(chat) {
+            if (chat.type === 'private') {
+                const isOnline = onlineUsers[chat.friendId];
+                chatHeaderStatus.textContent = isOnline ? 'Online' : 'Offline';
+                chatHeaderStatus.style.color = isOnline ? var(--online-color) : var(--offline-color);
+            }
+        }
+
+        // Load messages for a chat
+        function loadMessages(chatId, chatType) {
+            chatMessages.innerHTML = '';
+            
+            const messagesRef = chatType === 'private' ? 
+                database.ref('chats/' + chatId + '/messages') : 
+                database.ref('groupChats/' + chatId + '/messages');
+                
+            messagesRef.orderByChild('timestamp').limitToLast(100).on('value', snapshot => {
+                chatMessages.innerHTML = '';
+                const messages = [];
+                
+                snapshot.forEach(childSnapshot => {
+                    const message = childSnapshot.val();
+                    messages.push({
+                        id: childSnapshot.key,
+                        ...message
+                    });
+                });
+                
+                // Display messages in chronological order
+                messages.forEach(message => {
+                    displayMessage(message, chatType);
+                });
+                
+                // Scroll to bottom
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+            });
+        }
+
+        // Display a message
+        function displayMessage(message, chatType) {
+            const isCurrentUser = message.senderId === currentUser.uid;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+            
+            let messageContent;
+            if (message.type === 'image') {
+                messageContent = `<img src="${message.content}" class="message-image" onclick="openImageInFullScreen('${message.content}')">`;
+            } else {
+                messageContent = message.content;
+            }
+            
+            const time = formatTime(message.timestamp);
+            
+            messageDiv.innerHTML = `
+                <div class="message-bubble">${messageContent}</div>
+                <div class="message-time">${time}</div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+        }
+
+        // Send a message
+        function sendMessage() {
+            const content = messageInput.value.trim();
+            if (!content && !fileInput.files[0]) return;
+            
+            if (currentChat) {
+                const timestamp = Date.now();
+                const message = {
+                    senderId: currentUser.uid,
+                    senderName: userName.textContent,
+                    content: content,
+                    type: 'text',
+                    timestamp: timestamp
+                };
+                
+                if (currentChat.type === 'private') {
+                    // Private chat
+                    const chatRef = database.ref('chats/' + currentChat.id);
+                    
+                    // Update last message
+                    chatRef.update({
+                        lastMessage: content,
+                        lastMessageTime: timestamp,
+                        [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
+                    });
+                    
+                    // Add message
+                    chatRef.child('messages').push(message);
+                } else {
+                    // Group chat
+                    const groupRef = database.ref('groupChats/' + currentChat.id);
+                    
+                    // Update last message
+                    groupRef.update({
+                        lastMessage: `${userName.textContent}: ${content}`,
+                        lastMessageTime: timestamp
+                    });
+                    
+                    // Add message
+                    groupRef.child('messages').push(message);
+                    
+                    // Update unread count for all members except current user
+                    // This would require knowing all group members, which we'd need to store
+                    // For simplicity, we'll skip this in this implementation
+                }
+                
+                messageInput.value = '';
+            }
+        }
+
+        // Handle file upload
+        function handleFileUpload() {
+            const file = fileInput.files[0];
+            if (!file || !currentChat) return;
+            
+            // Upload file to Firebase Storage
+            const storageRef = storage.ref('chat_images/' + currentUser.uid + '/' + Date.now() + '_' + file.name);
+            const uploadTask = storageRef.put(file);
+            
+            uploadTask.on('state_changed', 
+                null, 
+                (error) => {
+                    console.error('Upload error:', error);
+                    showNotification('Failed to upload image');
+                }, 
+                () => {
+                    // Upload complete
+                    uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
+                        const timestamp = Date.now();
+                        const message = {
+                            senderId: currentUser.uid,
+                            senderName: userName.textContent,
+                            content: downloadURL,
+                            type: 'image',
+                            timestamp: timestamp
+                        };
+                        
+                        if (currentChat.type === 'private') {
+                            // Private chat
+                            const chatRef = database.ref('chats/' + currentChat.id);
+                            
+                            // Update last message
+                            chatRef.update({
+                                lastMessage: '📷 Image',
+                                lastMessageTime: timestamp,
+                                [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
+                            });
+                            
+                            // Add message
+                            chatRef.child('messages').push(message);
+                        } else {
+                            // Group chat
+                            const groupRef = database.ref('groupChats/' + currentChat.id);
+                            
+                            // Update last message
+                            groupRef.update({
+                                lastMessage: `${userName.textContent} sent an image`,
+                                lastMessageTime: timestamp
+                            });
+                            
+                            // Add message
+                            groupRef.child('messages').push(message);
+                        }
+                        
+                        fileInput.value = '';
+                    });
+                }
+            );
+        }
+
+        // Add a friend
+        function addFriend() {
+            const friendUsername = friendUsernameInput.value.trim();
+            if (!friendUsername) {
+                showNotification('Please enter a username');
+                return;
+            }
+            
+            if (friendUsername.toLowerCase() === userName.textContent.toLowerCase()) {
+                showNotification('You cannot add yourself as a friend');
+                return;
+            }
+            
+            // Find user with this username
+            database.ref('users').orderByChild('username').equalTo(friendUsername).once('value')
+                .then(snapshot => {
+                    if (!snapshot.exists()) {
+                        showNotification('User not found');
+                        return;
+                    }
+                    
+                    let friendId, friendData;
+                    snapshot.forEach(child => {
+                        friendId = child.key;
+                        friendData = child.val();
+                    });
+                    
+                    // Check if already friends
+                    database.ref('friends/' + currentUser.uid + '/' + friendId).once('value')
+                        .then(friendSnapshot => {
+                            if (friendSnapshot.exists()) {
+                                showNotification('You are already friends with this user');
+                                return;
+                            }
+                            
+                            // Add friend to both users
+                            const updates = {};
+                            updates[`friends/${currentUser.uid}/${friendId}`] = {
+                                username: friendData.username
+                            };
+                            updates[`friends/${friendId}/${currentUser.uid}`] = {
+                                username: userName.textContent
+                            };
+                            
+                            // Create chat reference
+                            const chatId = generateChatId(currentUser.uid, friendId);
+                            updates[`chats/${chatId}/participants`] = {
+                                [currentUser.uid]: true,
+                                [friendId]: true
+                            };
+                            
+                            return database.ref().update(updates);
+                        })
+                        .then(() => {
+                            showNotification('Friend added successfully');
+                            addFriendModal.style.display = 'none';
+                        })
+                        .catch(error => {
+                            console.error('Error adding friend:', error);
+                            showNotification('Failed to add friend');
+                        });
+                })
+                .catch(error => {
+                    console.error('Error finding user:', error);
+                    showNotification('Failed to find user');
+                });
+        }
+
+        // Render friends list for group creation
+        function renderFriendsListForGroup() {
+            friendsListContainer.innerHTML = '';
+            
+            if (friends.length === 0) {
+                friendsListContainer.innerHTML = '<p>You have no friends to add to a group</p>';
+                return;
+            }
+            
+            friends.forEach(friend => {
+                const friendItem = document.createElement('div');
+                friendItem.className = 'friend-item';
+                friendItem.innerHTML = `
+                    <input type="checkbox" id="friend-${friend.id}" value="${friend.id}">
+                    <label for="friend-${friend.id}">${friend.username}</label>
+                `;
+                friendsListContainer.appendChild(friendItem);
+            });
+        }
+
+        // Create a group
+        function createGroup() {
+            const groupName = groupNameInput.value.trim();
+            if (!groupName) {
+                showNotification('Please enter a group name');
+                return;
+            }
+            
+            const checkboxes = friendsListContainer.querySelectorAll('input[type="checkbox"]:checked');
+            if (checkboxes.length === 0) {
+                showNotification('Please select at least one friend');
+                return;
+            }
+            
+            const members = Array.from(checkboxes).map(cb => cb.value);
+            members.push(currentUser.uid); // Include current user
+            
+            // Create group
+            const groupRef = database.ref('groups').push();
+            const groupId = groupRef.key;
+            
+            // Add group data
+            const updates = {};
+            updates[`groups/${groupId}`] = {
+                name: groupName,
+                createdBy: currentUser.uid,
+                createdAt: Date.now()
+            };
+            
+            // Add group to each member's userGroups
+            members.forEach(memberId => {
+                updates[`userGroups/${memberId}/${groupId}`] = {
+                    name: groupName
+                };
+            });
+            
+            // Create group chat
+            updates[`groupChats/${groupId}`] = {
+                name: groupName,
+                members: members.reduce((acc, memberId) => {
+                    acc[memberId] = true;
+                    return acc;
+                }, {})
+            };
+            
+            database.ref().update(updates)
+                .then(() => {
+                    showNotification('Group created successfully');
+                    createGroupModal.style.display = 'none';
+                })
+                .catch(error => {
+                    console.error('Error creating group:', error);
+                    showNotification('Failed to create group');
+                });
+        }
+
+        // Mark messages as read
+        function markMessagesAsRead(chatId, chatType) {
+            if (chatType === 'private') {
+                database.ref(`chats/${chatId}/unread_${currentUser.uid}`).set(0);
+            } else {
+                database.ref(`groupChats/${chatId}/unread_${currentUser.uid}`).set(0);
+            }
+        }
+
+        // Generate chat ID for private chats
+        function generateChatId(userId1, userId2) {
+            return [userId1, userId2].sort().join('_');
+        }
+
+        // Format time
+        function formatTime(timestamp) {
+            if (!timestamp) return '';
+            
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Get avatar color based on name
+        function getAvatarColor(name) {
+            if (!name) return '#ccc';
+            
+            const colors = [
+                '#FF5733', '#33FF57', '#3357FF', '#F033FF', 
+                '#FF33A8', '#33FFF5', '#FF8C33', '#8C33FF'
+            ];
+            
+            const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return colors[hash % colors.length];
+        }
+
+        // Show notification
+        function showNotification(message) {
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Open image in full screen
+        window.openImageInFullScreen = function(url) {
+            const fullScreenDiv = document.createElement('div');
+            fullScreenDiv.style.position = 'fixed';
+            fullScreenDiv.style.top = '0';
+            fullScreenDiv.style.left = '0';
+            fullScreenDiv.style.width = '100%';
+            fullScreenDiv.style.height = '100%';
+            fullScreenDiv.style.backgroundColor = 'rgba(0,0,0,0.9)';
+            fullScreenDiv.style.display = 'flex';
+            fullScreenDiv.style.justifyContent = 'center';
+            fullScreenDiv.style.alignItems = 'center';
+            fullScreenDiv.style.zIndex = '1000';
+            fullScreenDiv.style.cursor = 'pointer';
+            
+            const img = document.createElement('img');
+            img.src = url;
+            img.style.maxWidth = '90%';
+            img.style.maxHeight = '90%';
+            img.style.objectFit = 'contain';
+            
+            fullScreenDiv.appendChild(img);
+            fullScreenDiv.addEventListener('click', () => {
+                document.body.removeChild(fullScreenDiv);
+            });
+            
+            document.body.appendChild(fullScreenDiv);
+        };
+
+        // Initialize the app
+        init();
+    </script>
+</body>
+</html>
