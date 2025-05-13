@@ -447,10 +447,29 @@
             border-radius: 7.5px;
             cursor: pointer;
             transition: transform 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
         .message-image:hover {
             transform: scale(1.02);
+        }
+
+        .message-image-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .message-image-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 5px;
+            font-size: 12px;
+            border-bottom-left-radius: 7.5px;
+            border-bottom-right-radius: 7.5px;
         }
 
         .chat-input {
@@ -1066,6 +1085,46 @@
             font-size: 12px;
             color: var(--light-text);
         }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin-left: 10px;
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        .typing-dots {
+            display: flex;
+            margin-left: 5px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--light-text);
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
     </style>
 </head>
 <body>
@@ -1152,6 +1211,14 @@
                 <div class="chat-header-info">
                     <div class="chat-header-name" id="chat-header-name">Chat Name</div>
                     <div class="chat-header-status" id="chat-header-status">Online</div>
+                </div>
+                <div id="typing-indicator" class="typing-indicator" style="display: none;">
+                    <span>typing</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
                 </div>
                 <button class="block-btn" id="block-user-btn" title="Block User">
                     <span class="material-icons">block</span>
@@ -1327,6 +1394,7 @@
         const imageInfo = document.getElementById('image-info');
         const uploadProgress = document.getElementById('upload-progress');
         const progressFill = document.getElementById('progress-fill');
+        const typingIndicator = document.getElementById('typing-indicator');
 
         // App State
         let currentUser = null;
@@ -1340,6 +1408,8 @@
         let notificationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3');
         let currentTheme = 'default';
         let messageListeners = {}; // To store message listeners for cleanup
+        let typingTimeout = null;
+        let isTyping = false;
 
         // Themes configuration
         const themes = {
@@ -1430,6 +1500,10 @@
                     sendMessage();
                 }
             });
+            
+            // Typing indicator
+            messageInput.addEventListener('input', handleTyping);
+            
             attachmentBtn.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileUpload);
             confirmAddFriend.addEventListener('click', sendFriendRequest);
@@ -1478,6 +1552,30 @@
                     document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
                 });
             });
+        }
+
+        // Handle typing indicator
+        function handleTyping() {
+            if (!currentChat || currentChat.type !== 'private') return;
+            
+            // User is typing
+            if (!isTyping) {
+                isTyping = true;
+                database.ref(`typing/${currentChat.id}/${currentUser.uid}`).set(true);
+                
+                // Set timeout to stop typing indicator after 2 seconds of inactivity
+                typingTimeout = setTimeout(() => {
+                    isTyping = false;
+                    database.ref(`typing/${currentChat.id}/${currentUser.uid}`).set(false);
+                }, 2000);
+            } else {
+                // Reset the timeout
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    isTyping = false;
+                    database.ref(`typing/${currentChat.id}/${currentUser.uid}`).set(false);
+                }, 2000);
+            }
         }
 
         // Apply theme
@@ -1783,6 +1881,22 @@
                 
                 // Store the listener for cleanup
                 messageListeners[chatId] = () => chatRef.off('value', listener);
+                
+                // Listen for typing indicators
+                listenForTypingIndicators(chatId, friend.id);
+            });
+        }
+
+        // Listen for typing indicators
+        function listenForTypingIndicators(chatId, friendId) {
+            database.ref(`typing/${chatId}/${friendId}`).on('value', snapshot => {
+                if (currentChat && currentChat.id === chatId) {
+                    if (snapshot.val()) {
+                        typingIndicator.style.display = 'flex';
+                    } else {
+                        typingIndicator.style.display = 'none';
+                    }
+                }
             });
         }
 
@@ -2017,12 +2131,14 @@
                 chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.friendName);
                 updateChatHeaderStatus(chat);
                 blockUserBtn.style.display = 'block';
+                typingIndicator.style.display = 'none';
             } else {
                 chatHeaderName.textContent = chat.name;
                 chatHeaderAvatar.textContent = chat.name.charAt(0).toUpperCase();
                 chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.name);
                 chatHeaderStatus.textContent = 'Group';
                 blockUserBtn.style.display = 'none';
+                typingIndicator.style.display = 'none';
             }
             
             // Load messages
@@ -2110,8 +2226,13 @@
             
             let messageContent;
             if (message.type === 'image') {
-                // Use the image URL directly (no upload needed)
-                messageContent = `<img src="${message.content}" class="message-image" onclick="showImagePreview('${message.content}', '${message.senderName}', ${message.timestamp})">`;
+                // Enhanced image message with overlay
+                messageContent = `
+                    <div class="message-image-container">
+                        <img src="${message.content}" class="message-image" onclick="showImagePreview('${message.content}', '${message.senderName}', ${message.timestamp})">
+                        <div class="message-image-overlay">${message.senderName}</div>
+                    </div>
+                `;
             } else {
                 messageContent = message.content;
             }
@@ -2176,6 +2297,18 @@
                     
                     // Add message
                     groupRef.child('messages').push(message);
+                    
+                    // Send notifications to all group members except sender
+                    database.ref(`userGroups/${currentUser.uid}/${currentChat.id}/members`).once('value').then(snapshot => {
+                        const members = snapshot.val();
+                        if (members) {
+                            Object.keys(members).forEach(memberId => {
+                                if (memberId !== currentUser.uid) {
+                                    sendNotification(memberId, `${userName.textContent} in ${currentChat.name}: ${content}`);
+                                }
+                            });
+                        }
+                    });
                 }
                 
                 messageInput.value = '';
@@ -2187,50 +2320,82 @@
             const file = fileInput.files[0];
             if (!file || !currentChat) return;
             
-            // For this implementation, we'll just use a placeholder image URL
-            // In a real app, you would upload to Firebase Storage
-            const imageUrl = 'https://via.placeholder.com/300x200?text=Chat+Image';
+            // Show upload progress
+            uploadProgress.style.display = 'block';
+            progressFill.style.width = '0%';
             
-            const timestamp = Date.now();
-            const message = {
-                senderId: currentUser.uid,
-                senderName: userName.textContent,
-                content: imageUrl,
-                type: 'image',
-                timestamp: timestamp
-            };
-            
-            if (currentChat.type === 'private') {
-                // Private chat
-                const chatRef = database.ref('chats/' + currentChat.id);
+            // For demo purposes, we'll simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressFill.style.width = `${progress}%`;
                 
-                // Update last message
-                chatRef.update({
-                    lastMessage: '📷 Image',
-                    lastMessageTime: timestamp,
-                    [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
-                });
-                
-                // Add message
-                chatRef.child('messages').push(message);
-                
-                // Send notification
-                sendNotification(currentChat.friendId, `${userName.textContent} sent an image`);
-            } else {
-                // Group chat
-                const groupRef = database.ref('groupChats/' + currentChat.id);
-                
-                // Update last message
-                groupRef.update({
-                    lastMessage: `${userName.textContent} sent an image`,
-                    lastMessageTime: timestamp
-                });
-                
-                // Add message
-                groupRef.child('messages').push(message);
-            }
-            
-            fileInput.value = '';
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    
+                    // After "upload" completes, use a placeholder image URL
+                    // In a real app, you would use the Firebase Storage URL here
+                    const imageUrl = `https://picsum.photos/400/300?random=${Date.now()}`;
+                    
+                    const timestamp = Date.now();
+                    const message = {
+                        senderId: currentUser.uid,
+                        senderName: userName.textContent,
+                        content: imageUrl,
+                        type: 'image',
+                        timestamp: timestamp
+                    };
+                    
+                    if (currentChat.type === 'private') {
+                        // Private chat
+                        const chatRef = database.ref('chats/' + currentChat.id);
+                        
+                        // Update last message
+                        chatRef.update({
+                            lastMessage: '📷 Image',
+                            lastMessageTime: timestamp,
+                            [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
+                        });
+                        
+                        // Add message
+                        chatRef.child('messages').push(message);
+                        
+                        // Send notification
+                        sendNotification(currentChat.friendId, `${userName.textContent} sent an image`);
+                    } else {
+                        // Group chat
+                        const groupRef = database.ref('groupChats/' + currentChat.id);
+                        
+                        // Update last message
+                        groupRef.update({
+                            lastMessage: `${userName.textContent} sent an image`,
+                            lastMessageTime: timestamp
+                        });
+                        
+                        // Add message
+                        groupRef.child('messages').push(message);
+                        
+                        // Send notifications to all group members except sender
+                        database.ref(`userGroups/${currentUser.uid}/${currentChat.id}/members`).once('value').then(snapshot => {
+                            const members = snapshot.val();
+                            if (members) {
+                                Object.keys(members).forEach(memberId => {
+                                    if (memberId !== currentUser.uid) {
+                                        sendNotification(memberId, `${userName.textContent} sent an image in ${currentChat.name}`);
+                                    }
+                                });
+                            }
+                        });
+                    }
+                    
+                    // Hide upload progress
+                    setTimeout(() => {
+                        uploadProgress.style.display = 'none';
+                    }, 1000);
+                    
+                    fileInput.value = '';
+                }
+            }, 200);
         }
 
         // Send friend request
@@ -2293,6 +2458,9 @@
                         .then(() => {
                             showNotification('Friend request sent successfully');
                             addFriendModal.style.display = 'none';
+                            
+                            // Send notification to the other user
+                            sendNotification(friendId, `${userName.textContent} sent you a friend request`);
                         })
                         .catch(error => {
                             console.error('Error sending friend request:', error);
