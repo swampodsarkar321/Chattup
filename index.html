@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chattup - Made by Swampod Sarkar</title>
+    <meta name="theme-color" content="#075E54">
+    <meta name="description" content="A real-time chat application">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon-192x192.png" type="image/png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -21,6 +25,11 @@
             --white-color: #fff;
             --online-color: #4CAF50;
             --offline-color: #E53935;
+            --pending-color: #FFA000;
+            --background-color: #ECE5DD;
+            --header-color: #075E54;
+            --text-color: #333;
+            --light-text: #777;
         }
 
         * {
@@ -31,10 +40,11 @@
         }
 
         body {
-            background-color: var(--gray-color);
+            background-color: var(--background-color);
             height: 100vh;
             display: flex;
             flex-direction: column;
+            color: var(--text-color);
         }
 
         /* Loading Screen */
@@ -84,7 +94,7 @@
 
         /* Auth Screen */
         .auth-container {
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             height: 100vh;
@@ -148,7 +158,7 @@
         }
 
         .header {
-            background-color: var(--primary-dark);
+            background-color: var(--header-color);
             color: var(--white-color);
             padding: 15px;
             display: flex;
@@ -159,6 +169,7 @@
         .user-info {
             display: flex;
             align-items: center;
+            cursor: pointer;
         }
 
         .user-avatar {
@@ -249,7 +260,7 @@
 
         .chat-last-message {
             font-size: 13px;
-            color: #777;
+            color: var(--light-text);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -275,6 +286,10 @@
 
         .offline {
             background-color: var(--offline-color);
+        }
+
+        .pending {
+            background-color: var(--pending-color);
         }
 
         /* Chat Area */
@@ -316,7 +331,7 @@
 
         .chat-header-status {
             font-size: 12px;
-            color: #777;
+            color: var(--light-text);
         }
 
         .chat-messages {
@@ -473,6 +488,90 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             display: none;
             z-index: 100;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        /* Friend Requests */
+        .requests-container {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .requests-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .requests-title {
+            font-weight: 500;
+            color: var(--primary-dark);
+        }
+
+        .requests-count {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+        }
+
+        .request-item {
+            display: flex;
+            padding: 10px 0;
+            align-items: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .request-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            color: var(--white-color);
+            font-weight: bold;
+        }
+
+        .request-info {
+            flex: 1;
+        }
+
+        .request-name {
+            font-weight: 500;
+        }
+
+        .request-actions {
+            display: flex;
+        }
+
+        .accept-btn, .reject-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            margin-left: 5px;
+        }
+
+        .accept-btn {
+            color: var(--online-color);
+        }
+
+        .reject-btn {
+            color: var(--offline-color);
         }
 
         /* Responsive */
@@ -503,6 +602,208 @@
             cursor: pointer;
             width: 100%;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .create-group-btn .material-icons {
+            margin-right: 5px;
+        }
+        
+        /* Unread badge */
+        .unread-badge {
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            margin-left: auto;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Profile Modal */
+        .profile-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .profile-content {
+            background-color: var(--white-color);
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--white-color);
+            font-size: 40px;
+            font-weight: bold;
+        }
+
+        .profile-name {
+            font-size: 20px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .profile-status {
+            font-size: 14px;
+            color: var(--light-text);
+        }
+
+        .profile-section {
+            margin-bottom: 15px;
+        }
+
+        .profile-section-title {
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        .theme-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .theme-option.selected {
+            border-color: var(--primary-color);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .welcome-icon {
+            font-size: 60px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--primary-dark);
+        }
+
+        .welcome-message {
+            font-size: 16px;
+            color: var(--light-text);
+            margin-bottom: 30px;
+        }
+
+        .welcome-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Block User Button */
+        .block-btn {
+            background: none;
+            border: none;
+            color: var(--offline-color);
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 10px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-icon {
+            font-size: 50px;
+            color: var(--light-text);
+            margin-bottom: 15px;
+        }
+
+        .empty-text {
+            color: var(--light-text);
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -528,7 +829,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="header">
-                <div class="user-info">
+                <div class="user-info" id="user-profile-btn">
                     <div class="user-avatar" id="user-avatar">U</div>
                     <div class="user-name" id="user-name">User</div>
                 </div>
@@ -537,36 +838,61 @@
                 </button>
             </div>
 
-            <div class="group-creation">
-                <button class="create-group-btn" id="create-group-btn">
-                    <span class="material-icons">group_add</span> Create New Group
-                </button>
+            <div class="tabs">
+                <div class="tab active" data-tab="chats">Chats</div>
+                <div class="tab" data-tab="requests">Requests</div>
             </div>
 
-            <div class="search-bar">
-                <input type="text" class="search-input" placeholder="Search or start new chat">
+            <div class="tab-content active" id="chats-tab">
+                <div class="group-creation">
+                    <button class="create-group-btn" id="create-group-btn">
+                        <span class="material-icons">group_add</span> Create New Group
+                    </button>
+                </div>
+
+                <div class="search-bar">
+                    <input type="text" class="search-input" placeholder="Search or start new chat">
+                </div>
+
+                <div class="chat-list" id="chat-list">
+                    <!-- Chats will be added here dynamically -->
+                </div>
             </div>
 
-            <div class="chat-list" id="chat-list">
-                <!-- Chats will be added here dynamically -->
+            <div class="tab-content" id="requests-tab">
+                <div class="requests-container" id="requests-container">
+                    <!-- Friend requests will be added here dynamically -->
+                </div>
             </div>
         </div>
 
         <!-- Chat Area -->
         <div class="chat-area" id="chat-area">
-            <div class="chat-header">
+            <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-icon">
+                    <span class="material-icons">chat</span>
+                </div>
+                <h2 class="welcome-title">Welcome to Chattup</h2>
+                <p class="welcome-message">Select a chat to start messaging or add new friends</p>
+                <button class="welcome-button" id="add-friend-welcome-btn">Add Friend</button>
+            </div>
+
+            <div class="chat-header" id="chat-header" style="display: none;">
                 <div class="chat-header-avatar" id="chat-header-avatar">C</div>
                 <div class="chat-header-info">
                     <div class="chat-header-name" id="chat-header-name">Chat Name</div>
                     <div class="chat-header-status" id="chat-header-status">Online</div>
                 </div>
+                <button class="block-btn" id="block-user-btn" title="Block User">
+                    <span class="material-icons">block</span>
+                </button>
             </div>
 
-            <div class="chat-messages" id="chat-messages">
+            <div class="chat-messages" id="chat-messages" style="display: none;">
                 <!-- Messages will be added here dynamically -->
             </div>
 
-            <div class="chat-input">
+            <div class="chat-input" id="chat-input" style="display: none;">
                 <button class="attachment-btn" id="attachment-btn">
                     <span class="material-icons">attach_file</span>
                 </button>
@@ -606,6 +932,37 @@
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="profile-modal" id="profile-modal">
+        <div class="profile-content">
+            <div class="profile-header">
+                <div class="profile-avatar" id="profile-avatar">U</div>
+                <div class="profile-name" id="profile-name">User</div>
+                <div class="profile-status" id="profile-status">Online</div>
+            </div>
+            
+            <div class="profile-section">
+                <div class="profile-section-title">Change Username</div>
+                <input type="text" class="modal-input" id="change-username-input" placeholder="Enter new username">
+                <button class="modal-button confirm-btn" id="update-username-btn" style="margin-top: 10px;">Update</button>
+            </div>
+            
+            <div class="profile-section">
+                <div class="profile-section-title">Change Theme</div>
+                <div class="theme-options">
+                    <div class="theme-option selected" data-theme="default" style="background-color: #075E54;"></div>
+                    <div class="theme-option" data-theme="blue" style="background-color: #1976D2;"></div>
+                    <div class="theme-option" data-theme="purple" style="background-color: #7B1FA2;"></div>
+                    <div class="theme-option" data-theme="dark" style="background-color: #212121;"></div>
+                </div>
+            </div>
+            
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button class="modal-button cancel-btn" id="close-profile-modal">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Notification -->
     <div class="notification" id="notification">
         New message received!
@@ -641,10 +998,13 @@
         const userName = document.getElementById('user-name');
         const chatList = document.getElementById('chat-list');
         const chatArea = document.getElementById('chat-area');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const chatHeader = document.getElementById('chat-header');
         const chatHeaderAvatar = document.getElementById('chat-header-avatar');
         const chatHeaderName = document.getElementById('chat-header-name');
         const chatHeaderStatus = document.getElementById('chat-header-status');
         const chatMessages = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
         const messageInput = document.getElementById('message-input');
         const sendButton = document.getElementById('send-button');
         const attachmentBtn = document.getElementById('attachment-btn');
@@ -653,6 +1013,7 @@
         const friendUsernameInput = document.getElementById('friend-username-input');
         const cancelAddFriend = document.getElementById('cancel-add-friend');
         const confirmAddFriend = document.getElementById('confirm-add-friend');
+        const addFriendWelcomeBtn = document.getElementById('add-friend-welcome-btn');
         const createGroupBtn = document.getElementById('create-group-btn');
         const createGroupModal = document.getElementById('create-group-modal');
         const groupNameInput = document.getElementById('group-name-input');
@@ -660,6 +1021,19 @@
         const cancelCreateGroup = document.getElementById('cancel-create-group');
         const confirmCreateGroup = document.getElementById('confirm-create-group');
         const notification = document.getElementById('notification');
+        const requestsContainer = document.getElementById('requests-container');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const profileModal = document.getElementById('profile-modal');
+        const profileAvatar = document.getElementById('profile-avatar');
+        const profileName = document.getElementById('profile-name');
+        const profileStatus = document.getElementById('profile-status');
+        const changeUsernameInput = document.getElementById('change-username-input');
+        const updateUsernameBtn = document.getElementById('update-username-btn');
+        const closeProfileModal = document.getElementById('close-profile-modal');
+        const userProfileBtn = document.getElementById('user-profile-btn');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const blockUserBtn = document.getElementById('block-user-btn');
 
         // App State
         let currentUser = null;
@@ -668,6 +1042,63 @@
         let groups = [];
         let chats = [];
         let onlineUsers = {};
+        let friendRequests = [];
+        let blockedUsers = [];
+        let notificationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3');
+        let currentTheme = 'default';
+
+        // Themes configuration
+        const themes = {
+            default: {
+                '--primary-color': '#128C7E',
+                '--primary-dark': '#075E54',
+                '--secondary-color': '#25D366',
+                '--light-color': '#DCF8C6',
+                '--background-color': '#ECE5DD',
+                '--header-color': '#075E54',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#ECE5DD'
+            },
+            blue: {
+                '--primary-color': '#2196F3',
+                '--primary-dark': '#1976D2',
+                '--secondary-color': '#64B5F6',
+                '--light-color': '#BBDEFB',
+                '--background-color': '#E3F2FD',
+                '--header-color': '#1976D2',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#E3F2FD'
+            },
+            purple: {
+                '--primary-color': '#9C27B0',
+                '--primary-dark': '#7B1FA2',
+                '--secondary-color': '#BA68C8',
+                '--light-color': '#E1BEE7',
+                '--background-color': '#F3E5F5',
+                '--header-color': '#7B1FA2',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#F3E5F5'
+            },
+            dark: {
+                '--primary-color': '#424242',
+                '--primary-dark': '#212121',
+                '--secondary-color': '#616161',
+                '--light-color': '#E0E0E0',
+                '--background-color': '#303030',
+                '--header-color': '#212121',
+                '--text-color': '#FFFFFF',
+                '--light-text': '#BDBDBD',
+                '--white-color': '#212121',
+                '--gray-color': '#424242',
+                '--dark-color': '#E0E0E0'
+            }
+        };
 
         // Initialize the app
         function init() {
@@ -676,6 +1107,24 @@
                 loadingScreen.classList.add('hidden');
                 checkAuthState();
             }, 2000);
+
+            // Register service worker for PWA
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/sw.js').then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    }).catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+                });
+            }
+
+            // Request notification permission
+            if ('Notification' in window) {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                });
+            }
 
             // Event Listeners
             loginButton.addEventListener('click', handleLogin);
@@ -689,8 +1138,12 @@
             });
             attachmentBtn.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileUpload);
-            confirmAddFriend.addEventListener('click', addFriend);
+            confirmAddFriend.addEventListener('click', sendFriendRequest);
             cancelAddFriend.addEventListener('click', () => addFriendModal.style.display = 'none');
+            addFriendWelcomeBtn.addEventListener('click', () => {
+                friendUsernameInput.value = '';
+                addFriendModal.style.display = 'flex';
+            });
             createGroupBtn.addEventListener('click', () => {
                 groupNameInput.value = '';
                 renderFriendsListForGroup();
@@ -698,6 +1151,46 @@
             });
             cancelCreateGroup.addEventListener('click', () => createGroupModal.style.display = 'none');
             confirmCreateGroup.addEventListener('click', createGroup);
+            userProfileBtn.addEventListener('click', openProfileModal);
+            closeProfileModal.addEventListener('click', () => profileModal.style.display = 'none');
+            updateUsernameBtn.addEventListener('click', updateUsername);
+            blockUserBtn.addEventListener('click', blockCurrentUser);
+
+            // Theme selection
+            themeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    themeOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    currentTheme = option.dataset.theme;
+                    applyTheme(currentTheme);
+                    
+                    // Save theme preference
+                    if (currentUser) {
+                        database.ref('users/' + currentUser.uid).update({
+                            theme: currentTheme
+                        });
+                    }
+                });
+            });
+
+            // Tab switching
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(c => c.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        // Apply theme
+        function applyTheme(theme) {
+            const themeColors = themes[theme];
+            Object.keys(themeColors).forEach(key => {
+                document.documentElement.style.setProperty(key, themeColors[key]);
+            });
         }
 
         // Check auth state
@@ -711,6 +1204,9 @@
                     appContainer.style.display = 'flex';
                     listenForUserUpdates(user.uid);
                     listenForOnlineStatus();
+                    listenForFriendRequests();
+                    loadBlockedUsers();
+                    listenForNotifications();
                 } else {
                     // No user is signed in
                     authContainer.style.display = 'flex';
@@ -734,7 +1230,8 @@
                     return database.ref('users/' + user.uid).set({
                         username: username,
                         online: true,
-                        lastSeen: Date.now()
+                        lastSeen: Date.now(),
+                        theme: 'default'
                     });
                 })
                 .catch(error => {
@@ -765,6 +1262,21 @@
                     userName.textContent = userData.username;
                     userAvatar.textContent = userData.username.charAt(0).toUpperCase();
                     userAvatar.style.backgroundColor = getAvatarColor(userData.username);
+                    profileName.textContent = userData.username;
+                    profileAvatar.textContent = userData.username.charAt(0).toUpperCase();
+                    profileAvatar.style.backgroundColor = getAvatarColor(userData.username);
+
+                    // Apply saved theme
+                    if (userData.theme) {
+                        currentTheme = userData.theme;
+                        applyTheme(currentTheme);
+                        themeOptions.forEach(opt => {
+                            opt.classList.remove('selected');
+                            if (opt.dataset.theme === currentTheme) {
+                                opt.classList.add('selected');
+                            }
+                        });
+                    }
 
                     // Load friends and chats
                     loadFriends(userId);
@@ -781,6 +1293,9 @@
                     userName.textContent = userData.username;
                     userAvatar.textContent = userData.username.charAt(0).toUpperCase();
                     userAvatar.style.backgroundColor = getAvatarColor(userData.username);
+                    profileName.textContent = userData.username;
+                    profileAvatar.textContent = userData.username.charAt(0).toUpperCase();
+                    profileAvatar.style.backgroundColor = getAvatarColor(userData.username);
                 }
             });
         }
@@ -807,6 +1322,75 @@
             });
         }
 
+        // Listen for friend requests
+        function listenForFriendRequests() {
+            database.ref('friendRequests/' + currentUser.uid).on('value', snapshot => {
+                friendRequests = [];
+                const requestsData = snapshot.val();
+                
+                if (requestsData) {
+                    Object.keys(requestsData).forEach(requestId => {
+                        if (requestsData[requestId].status === 'pending') {
+                            friendRequests.push({
+                                id: requestId,
+                                from: requestsData[requestId].from,
+                                username: requestsData[requestId].username,
+                                timestamp: requestsData[requestId].timestamp
+                            });
+                        }
+                    });
+                    
+                    renderFriendRequests();
+                }
+            });
+        }
+
+        // Listen for notifications
+        function listenForNotifications() {
+            database.ref('notifications/' + currentUser.uid).on('child_added', snapshot => {
+                const notificationData = snapshot.val();
+                if (!notificationData.read) {
+                    // Show notification
+                    showBrowserNotification(notificationData.fromName, notificationData.message);
+                    
+                    // Mark as read
+                    database.ref('notifications/' + currentUser.uid + '/' + snapshot.key).update({
+                        read: true
+                    });
+                }
+            });
+        }
+
+        // Show browser notification
+        function showBrowserNotification(title, message) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: '/icon-192x192.png'
+                });
+            }
+            
+            // Play sound
+            notificationSound.play().catch(e => console.log('Notification sound error:', e));
+            
+            // Show in-app notification
+            showNotification(message);
+        }
+
+        // Load blocked users
+        function loadBlockedUsers() {
+            database.ref('blockedUsers/' + currentUser.uid).on('value', snapshot => {
+                blockedUsers = [];
+                const blockedData = snapshot.val();
+                
+                if (blockedData) {
+                    Object.keys(blockedData).forEach(userId => {
+                        blockedUsers.push(userId);
+                    });
+                }
+            });
+        }
+
         // Load user's friends
         function loadFriends(userId) {
             database.ref('friends/' + userId).on('value', snapshot => {
@@ -815,10 +1399,13 @@
                 
                 if (friendsData) {
                     Object.keys(friendsData).forEach(friendId => {
-                        friends.push({
-                            id: friendId,
-                            ...friendsData[friendId]
-                        });
+                        // Only add if not blocked
+                        if (!blockedUsers.includes(friendId)) {
+                            friends.push({
+                                id: friendId,
+                                ...friendsData[friendId]
+                            });
+                        }
                     });
                     
                     // Load chats for each friend
@@ -956,6 +1543,19 @@
             chatList.appendChild(addFriendItem);
             
             // Add chats
+            if (chats.length === 0) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                emptyState.innerHTML = `
+                    <div class="empty-icon">
+                        <span class="material-icons">forum</span>
+                    </div>
+                    <div class="empty-text">No chats yet. Add friends to start chatting!</div>
+                `;
+                chatList.appendChild(emptyState);
+                return;
+            }
+            
             chats.forEach(chat => {
                 const chatItem = document.createElement('div');
                 chatItem.className = `chat-item ${currentChat && currentChat.id === chat.id ? 'active' : ''}`;
@@ -991,6 +1591,65 @@
             });
         }
 
+        // Render friend requests
+        function renderFriendRequests() {
+            requestsContainer.innerHTML = '';
+            
+            if (friendRequests.length === 0) {
+                requestsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <span class="material-icons">person_add_disabled</span>
+                        </div>
+                        <div class="empty-text">No pending friend requests</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Add header with count
+            const header = document.createElement('div');
+            header.className = 'requests-header';
+            header.innerHTML = `
+                <div class="requests-title">Friend Requests</div>
+                <div class="requests-count">${friendRequests.length}</div>
+            `;
+            requestsContainer.appendChild(header);
+            
+            // Add requests
+            friendRequests.forEach(request => {
+                const requestItem = document.createElement('div');
+                requestItem.className = 'request-item';
+                requestItem.innerHTML = `
+                    <div class="request-avatar" style="background-color: ${getAvatarColor(request.username)}">
+                        ${request.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="request-info">
+                        <div class="request-name">${request.username}</div>
+                    </div>
+                    <div class="request-actions">
+                        <button class="accept-btn" data-request-id="${request.id}" data-from-id="${request.from}">
+                            <span class="material-icons">check</span>
+                        </button>
+                        <button class="reject-btn" data-request-id="${request.id}" data-from-id="${request.from}">
+                            <span class="material-icons">close</span>
+                        </button>
+                    </div>
+                `;
+                
+                // Add event listeners to buttons
+                requestItem.querySelector('.accept-btn').addEventListener('click', (e) => {
+                    acceptFriendRequest(e.target.closest('button').dataset.requestId, e.target.closest('button').dataset.fromId);
+                });
+                
+                requestItem.querySelector('.reject-btn').addEventListener('click', (e) => {
+                    rejectFriendRequest(e.target.closest('button').dataset.requestId);
+                });
+                
+                requestsContainer.appendChild(requestItem);
+            });
+        }
+
         // Update chat list status indicators
         function updateChatListStatus() {
             const chatItems = chatList.querySelectorAll('.chat-item');
@@ -1010,17 +1669,25 @@
             currentChat = chat;
             renderChatList();
             
+            // Hide welcome screen, show chat UI
+            welcomeScreen.style.display = 'none';
+            chatHeader.style.display = 'flex';
+            chatMessages.style.display = 'block';
+            chatInput.style.display = 'flex';
+            
             // Update chat header
             if (chat.type === 'private') {
                 chatHeaderName.textContent = chat.friendName;
                 chatHeaderAvatar.textContent = chat.friendName.charAt(0).toUpperCase();
                 chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.friendName);
                 updateChatHeaderStatus(chat);
+                blockUserBtn.style.display = 'block';
             } else {
                 chatHeaderName.textContent = chat.name;
                 chatHeaderAvatar.textContent = chat.name.charAt(0).toUpperCase();
                 chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.name);
                 chatHeaderStatus.textContent = 'Group';
+                blockUserBtn.style.display = 'none';
             }
             
             // Load messages
@@ -1043,7 +1710,7 @@
             if (chat.type === 'private') {
                 const isOnline = onlineUsers[chat.friendId];
                 chatHeaderStatus.textContent = isOnline ? 'Online' : 'Offline';
-                chatHeaderStatus.style.color = isOnline ? var(--online-color) : var(--offline-color);
+                chatHeaderStatus.style.color = isOnline ? 'var(--online-color)' : 'var(--offline-color)';
             }
         }
 
@@ -1130,6 +1797,9 @@
                     
                     // Add message
                     chatRef.child('messages').push(message);
+                    
+                    // Send notification to the other user
+                    sendNotification(currentChat.friendId, `${userName.textContent}: ${content}`);
                 } else {
                     // Group chat
                     const groupRef = database.ref('groupChats/' + currentChat.id);
@@ -1142,10 +1812,6 @@
                     
                     // Add message
                     groupRef.child('messages').push(message);
-                    
-                    // Update unread count for all members except current user
-                    // This would require knowing all group members, which we'd need to store
-                    // For simplicity, we'll skip this in this implementation
                 }
                 
                 messageInput.value = '';
@@ -1192,6 +1858,9 @@
                             
                             // Add message
                             chatRef.child('messages').push(message);
+                            
+                            // Send notification
+                            sendNotification(currentChat.friendId, `${userName.textContent} sent an image`);
                         } else {
                             // Group chat
                             const groupRef = database.ref('groupChats/' + currentChat.id);
@@ -1212,8 +1881,8 @@
             );
         }
 
-        // Add a friend
-        function addFriend() {
+        // Send friend request
+        function sendFriendRequest() {
             const friendUsername = friendUsernameInput.value.trim();
             if (!friendUsername) {
                 showNotification('Please enter a username');
@@ -1247,36 +1916,140 @@
                                 return;
                             }
                             
-                            // Add friend to both users
-                            const updates = {};
-                            updates[`friends/${currentUser.uid}/${friendId}`] = {
-                                username: friendData.username
-                            };
-                            updates[`friends/${friendId}/${currentUser.uid}`] = {
-                                username: userName.textContent
+                            // Check if request already exists
+                            return database.ref(`friendRequests/${friendId}/${currentUser.uid}`).once('value');
+                        })
+                        .then(requestSnapshot => {
+                            if (requestSnapshot.exists() && requestSnapshot.val().status === 'pending') {
+                                showNotification('Friend request already sent');
+                                return;
+                            }
+                            
+                            // Create friend request
+                            const requestData = {
+                                from: currentUser.uid,
+                                username: userName.textContent,
+                                status: 'pending',
+                                timestamp: Date.now()
                             };
                             
-                            // Create chat reference
-                            const chatId = generateChatId(currentUser.uid, friendId);
-                            updates[`chats/${chatId}/participants`] = {
-                                [currentUser.uid]: true,
-                                [friendId]: true
-                            };
+                            const updates = {};
+                            updates[`friendRequests/${friendId}/${currentUser.uid}`] = requestData;
                             
                             return database.ref().update(updates);
                         })
                         .then(() => {
-                            showNotification('Friend added successfully');
+                            showNotification('Friend request sent successfully');
                             addFriendModal.style.display = 'none';
                         })
                         .catch(error => {
-                            console.error('Error adding friend:', error);
-                            showNotification('Failed to add friend');
+                            console.error('Error sending friend request:', error);
+                            showNotification('Failed to send friend request');
                         });
                 })
                 .catch(error => {
                     console.error('Error finding user:', error);
                     showNotification('Failed to find user');
+                });
+        }
+
+        // Accept friend request
+        function acceptFriendRequest(requestId, fromId) {
+            // Update request status
+            const updates = {};
+            updates[`friendRequests/${currentUser.uid}/${fromId}/status`] = 'accepted';
+            
+            // Add to friends list for both users
+            database.ref('users/' + fromId).once('value').then(snapshot => {
+                const friendData = snapshot.val();
+                
+                updates[`friends/${currentUser.uid}/${fromId}`] = {
+                    username: friendData.username
+                };
+                
+                updates[`friends/${fromId}/${currentUser.uid}`] = {
+                    username: userName.textContent
+                };
+                
+                // Create chat reference
+                const chatId = generateChatId(currentUser.uid, fromId);
+                updates[`chats/${chatId}/participants`] = {
+                    [currentUser.uid]: true,
+                    [fromId]: true
+                };
+                
+                return database.ref().update(updates);
+            })
+            .then(() => {
+                showNotification('Friend request accepted');
+                // Send notification to the other user
+                sendNotification(fromId, `${userName.textContent} accepted your friend request`);
+            })
+            .catch(error => {
+                console.error('Error accepting friend request:', error);
+                showNotification('Failed to accept friend request');
+            });
+        }
+
+        // Reject friend request
+        function rejectFriendRequest(requestId) {
+            database.ref(`friendRequests/${currentUser.uid}/${requestId}`).remove()
+                .then(() => {
+                    showNotification('Friend request rejected');
+                })
+                .catch(error => {
+                    console.error('Error rejecting friend request:', error);
+                    showNotification('Failed to reject friend request');
+                });
+        }
+
+        // Block current chat user
+        function blockCurrentUser() {
+            if (!currentChat || currentChat.type !== 'private') return;
+            
+            if (confirm(`Are you sure you want to block ${currentChat.friendName}?`)) {
+                const updates = {};
+                updates[`blockedUsers/${currentUser.uid}/${currentChat.friendId}`] = true;
+                
+                // Remove from friends list
+                updates[`friends/${currentUser.uid}/${currentChat.friendId}`] = null;
+                updates[`friends/${currentChat.friendId}/${currentUser.uid}`] = null;
+                
+                database.ref().update(updates)
+                    .then(() => {
+                        showNotification(`${currentChat.friendName} has been blocked`);
+                        // Close current chat
+                        currentChat = null;
+                        welcomeScreen.style.display = 'flex';
+                        chatHeader.style.display = 'none';
+                        chatMessages.style.display = 'none';
+                        chatInput.style.display = 'none';
+                    })
+                    .catch(error => {
+                        console.error('Error blocking user:', error);
+                        showNotification('Failed to block user');
+                    });
+            }
+        }
+
+        // Send notification to a user
+        function sendNotification(userId, message) {
+            // Create notification
+            const notificationData = {
+                from: currentUser.uid,
+                fromName: userName.textContent,
+                message: message,
+                timestamp: Date.now(),
+                read: false
+            };
+            
+            database.ref(`notifications/${userId}`).push(notificationData)
+                .then(() => {
+                    // Play notification sound (if enabled)
+                    notificationSound.play().catch(e => console.log('Notification sound error:', e));
+                })
+                .catch(error => {
+                    console.error('Error sending notification:', error);
                 });
         }
 
@@ -1401,8 +2174,43 @@
             }, 3000);
         }
 
+        // Open profile modal
+        function openProfileModal() {
+            profileModal.style.display = 'flex';
+            changeUsernameInput.value = userName.textContent;
+            
+            // Update profile status
+            profileStatus.textContent = 'Online';
+            profileStatus.style.color = 'var(--online-color)';
+        }
+
+        // Update username
+        function updateUsername() {
+            const newUsername = changeUsernameInput.value.trim();
+            if (!newUsername) {
+                showNotification('Please enter a username');
+                return;
+            }
+            
+            if (newUsername === userName.textContent) {
+                showNotification('This is already your username');
+                return;
+            }
+            
+            database.ref('users/' + currentUser.uid).update({
+                username: newUsername
+            })
+            .then(() => {
+                showNotification('Username updated successfully');
+            })
+            .catch(error => {
+                console.error('Error updating username:', error);
+                showNotification('Failed to update username');
+            });
+        }
+
         // Open image in full screen
-        window.openImageInFullScreen = function(url) {
+        function openImageInFullScreen(url) {
             const fullScreenDiv = document.createElement('div');
             fullScreenDiv.style.position = 'fixed';
             fullScreenDiv.style.top = '0';
@@ -1428,10 +2236,13 @@
             });
             
             document.body.appendChild(fullScreenDiv);
-        };
+        }
 
         // Initialize the app
         init();
+
+        // Make function available globally for image click
+        window.openImageInFullScreen = openImageInFullScreen;
     </script>
 </body>
 </html>
