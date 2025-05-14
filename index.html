@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chattup - Made by Swampod Sarkar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>WhatsVibe - Mobile Chat App</title>
     <meta name="theme-color" content="#075E54">
-    <meta name="description" content="A real-time chat application">
+    <meta name="description" content="WhatsVibe - A WhatsApp-like chat app for mobile">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="icon" href="/icon-192x192.png" type="image/png">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -37,6 +37,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Roboto', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
@@ -45,6 +46,47 @@
             display: flex;
             flex-direction: column;
             color: var(--text-color);
+            touch-action: manipulation;
+        }
+
+        /* Desktop warning */
+        .desktop-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f0f0f0;
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .desktop-warning-content {
+            max-width: 400px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .desktop-warning-icon {
+            font-size: 60px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .desktop-warning h2 {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+        }
+
+        .desktop-warning p {
+            margin-bottom: 20px;
+            color: var(--dark-color);
         }
 
         /* Loading Screen */
@@ -195,10 +237,12 @@
         .app-container {
             display: none;
             height: 100vh;
+            width: 100%;
+            overflow: hidden;
         }
 
         .sidebar {
-            width: 30%;
+            width: 100%;
             background-color: var(--white-color);
             border-right: 1px solid #ddd;
             display: flex;
@@ -213,6 +257,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: relative;
+            z-index: 10;
         }
 
         .user-info {
@@ -273,6 +319,7 @@
         .chat-list {
             flex: 1;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .chat-item {
@@ -309,11 +356,15 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            min-width: 0;
         }
 
         .chat-name {
             font-weight: 500;
             margin-bottom: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .chat-last-message {
@@ -356,6 +407,16 @@
             display: flex;
             flex-direction: column;
             background-color: var(--gray-color);
+            position: fixed;
+            top: 0;
+            left: 100%;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.3s ease;
+        }
+
+        .chat-area.active {
+            transform: translateX(-100%);
         }
 
         .chat-header {
@@ -364,6 +425,17 @@
             display: flex;
             align-items: center;
             border-bottom: 1px solid #ddd;
+            position: relative;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--primary-dark);
+            margin-right: 10px;
+            font-size: 20px;
+            cursor: pointer;
+            display: none;
         }
 
         .chat-header-avatar {
@@ -381,10 +453,14 @@
 
         .chat-header-info {
             flex: 1;
+            min-width: 0;
         }
 
         .chat-header-name {
             font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .chat-header-status {
@@ -396,6 +472,7 @@
             flex: 1;
             padding: 20px;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
             background-repeat: repeat;
         }
@@ -404,7 +481,7 @@
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-            max-width: 70%;
+            max-width: 80%;
         }
 
         .message.sent {
@@ -477,6 +554,7 @@
             padding: 10px;
             background-color: var(--white-color);
             align-items: center;
+            border-top: 1px solid #ddd;
         }
 
         .attachment-btn, .send-btn {
@@ -675,29 +753,12 @@
             transition: transform 0.2s;
         }
 
-        .accept-btn:hover, .reject-btn:hover {
-            transform: scale(1.1);
-        }
-
         .accept-btn {
             color: var(--online-color);
         }
 
         .reject-btn {
             color: var(--offline-color);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-            }
-            .chat-area {
-                display: none;
-            }
-            .chat-area.active {
-                display: flex;
-            }
         }
 
         /* Group creation */
@@ -1125,13 +1186,84 @@
             0%, 60%, 100% { transform: translateY(0); }
             30% { transform: translateY(-5px); }
         }
+
+        /* URL Input Modal */
+        .url-input-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .url-input-content {
+            background-color: var(--white-color);
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .url-input-title {
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            font-size: 18px;
+        }
+
+        .url-input-field {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        /* Responsive adjustments */
+        @media (min-width: 768px) {
+            .sidebar {
+                width: 35%;
+            }
+            
+            .chat-area {
+                position: relative;
+                left: 0;
+                transform: none;
+            }
+            
+            .back-button {
+                display: none;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .back-button {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- Desktop Warning -->
+    <div class="desktop-warning">
+        <div class="desktop-warning-content">
+            <div class="desktop-warning-icon">
+                <span class="material-icons">smartphone</span>
+            </div>
+            <h2>WhatsVibe is for Mobile Only</h2>
+            <p>This application is designed to work on mobile and tablet devices only. Please open it on your smartphone or tablet to continue.</p>
+        </div>
+    </div>
+
     <!-- Loading Screen -->
     <div class="loading-screen">
         <div class="loading-animation"></div>
-        <div class="loading-text">Loading Chattup</div>
+        <div class="loading-text">Loading WhatsVibe</div>
         <div class="made-by">Made by Swampod Sarkar</div>
     </div>
 
@@ -1143,7 +1275,7 @@
                     <path d="M12,2C6.48,2,2,6.48,2,12s4.48,10,10,10s10-4.48,10-10S17.52,2,12,2z M12,20c-4.41,0-8-3.59-8-8s3.59-8,8-8s8,3.59,8,8 S16.41,20,12,20z M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5S14.76,7,12,7z"/>
                 </svg>
             </div>
-            <h1 class="auth-title">Welcome to Chattup</h1>
+            <h1 class="auth-title">Welcome to WhatsVibe</h1>
             <p class="auth-subtitle">Connect with friends in real-time</p>
             <div class="auth-input-container">
                 <input type="text" id="username-input" class="auth-input" placeholder="Enter your username">
@@ -1201,12 +1333,15 @@
                 <div class="welcome-icon">
                     <span class="material-icons">chat</span>
                 </div>
-                <h2 class="welcome-title">Welcome to Chattup</h2>
+                <h2 class="welcome-title">Welcome to WhatsVibe</h2>
                 <p class="welcome-message">Select a chat to start messaging or add new friends</p>
                 <button class="welcome-button" id="add-friend-welcome-btn">Add Friend</button>
             </div>
 
             <div class="chat-header" id="chat-header" style="display: none;">
+                <button class="back-button" id="back-button">
+                    <span class="material-icons">arrow_back</span>
+                </button>
                 <div class="chat-header-avatar" id="chat-header-avatar">C</div>
                 <div class="chat-header-info">
                     <div class="chat-header-name" id="chat-header-name">Chat Name</div>
@@ -1314,6 +1449,18 @@
         </div>
     </div>
 
+    <!-- URL Input Modal -->
+    <div class="url-input-modal" id="url-input-modal">
+        <div class="url-input-content">
+            <h3 class="url-input-title">Enter Image URL</h3>
+            <input type="text" class="url-input-field" id="url-input-field" placeholder="https://example.com/image.jpg">
+            <div class="modal-buttons">
+                <button class="modal-button cancel-btn" id="cancel-url-input">Cancel</button>
+                <button class="modal-button confirm-btn" id="confirm-url-input">Send</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Upload Progress -->
     <div class="upload-progress" id="upload-progress">
         <div>Uploading image...</div>
@@ -1323,6 +1470,17 @@
     </div>
 
     <script>
+        // Check if device is mobile/tablet
+        function isMobileDevice() {
+            return (typeof window.orientation !== "undefined") || (navigator.userAgent.indexOf('IEMobile') !== -1);
+        }
+
+        // Show desktop warning if not mobile
+        if (!isMobileDevice()) {
+            document.querySelector('.desktop-warning').style.display = 'flex';
+            document.querySelector('.loading-screen').style.display = 'none';
+        }
+
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBJ0r_Nb9IplADBNNsFIgbqb01kcbGvuso",
@@ -1395,6 +1553,11 @@
         const uploadProgress = document.getElementById('upload-progress');
         const progressFill = document.getElementById('progress-fill');
         const typingIndicator = document.getElementById('typing-indicator');
+        const backButton = document.getElementById('back-button');
+        const urlInputModal = document.getElementById('url-input-modal');
+        const urlInputField = document.getElementById('url-input-field');
+        const cancelUrlInput = document.getElementById('cancel-url-input');
+        const confirmUrlInput = document.getElementById('confirm-url-input');
 
         // App State
         let currentUser = null;
@@ -1407,7 +1570,7 @@
         let blockedUsers = [];
         let notificationSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3');
         let currentTheme = 'default';
-        let messageListeners = {}; // To store message listeners for cleanup
+        let messageListeners = {};
         let typingTimeout = null;
         let isTyping = false;
 
@@ -1504,7 +1667,16 @@
             // Typing indicator
             messageInput.addEventListener('input', handleTyping);
             
-            attachmentBtn.addEventListener('click', () => fileInput.click());
+            attachmentBtn.addEventListener('click', () => {
+                // Show option to upload image or enter URL
+                if (confirm('Choose image source:\n\n1. Upload from device\n2. Enter image URL')) {
+                    fileInput.click();
+                } else {
+                    urlInputField.value = '';
+                    urlInputModal.style.display = 'flex';
+                }
+            });
+            
             fileInput.addEventListener('change', handleFileUpload);
             confirmAddFriend.addEventListener('click', sendFriendRequest);
             cancelAddFriend.addEventListener('click', () => addFriendModal.style.display = 'none');
@@ -1524,6 +1696,11 @@
             updateUsernameBtn.addEventListener('click', updateUsername);
             blockUserBtn.addEventListener('click', blockCurrentUser);
             closePreview.addEventListener('click', () => imagePreviewModal.style.display = 'none');
+            backButton.addEventListener('click', () => {
+                chatArea.classList.remove('active');
+            });
+            cancelUrlInput.addEventListener('click', () => urlInputModal.style.display = 'none');
+            confirmUrlInput.addEventListener('click', sendImageFromUrl);
 
             // Theme selection
             themeOptions.forEach(option => {
@@ -1575,6 +1752,78 @@
                     isTyping = false;
                     database.ref(`typing/${currentChat.id}/${currentUser.uid}`).set(false);
                 }, 2000);
+            }
+        }
+
+        // Send image from URL
+        function sendImageFromUrl() {
+            const imageUrl = urlInputField.value.trim();
+            if (!imageUrl) {
+                showNotification('Please enter an image URL');
+                return;
+            }
+
+            // Validate URL
+            try {
+                new URL(imageUrl);
+            } catch (e) {
+                showNotification('Please enter a valid URL');
+                return;
+            }
+
+            urlInputModal.style.display = 'none';
+
+            if (!currentChat) return;
+
+            const timestamp = Date.now();
+            const message = {
+                senderId: currentUser.uid,
+                senderName: userName.textContent,
+                content: imageUrl,
+                type: 'image',
+                timestamp: timestamp
+            };
+
+            if (currentChat.type === 'private') {
+                // Private chat
+                const chatRef = database.ref('chats/' + currentChat.id);
+                
+                // Update last message
+                chatRef.update({
+                    lastMessage: '📷 Image',
+                    lastMessageTime: timestamp,
+                    [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
+                });
+                
+                // Add message
+                chatRef.child('messages').push(message);
+                
+                // Send notification
+                sendNotification(currentChat.friendId, `${userName.textContent} sent an image`);
+            } else {
+                // Group chat
+                const groupRef = database.ref('groupChats/' + currentChat.id);
+                
+                // Update last message
+                groupRef.update({
+                    lastMessage: `${userName.textContent} sent an image`,
+                    lastMessageTime: timestamp
+                });
+                
+                // Add message
+                groupRef.child('messages').push(message);
+                
+                // Send notifications to all group members except sender
+                database.ref(`userGroups/${currentUser.uid}/${currentChat.id}/members`).once('value').then(snapshot => {
+                    const members = snapshot.val();
+                    if (members) {
+                        Object.keys(members).forEach(memberId => {
+                            if (memberId !== currentUser.uid) {
+                                sendNotification(memberId, `${userName.textContent} sent an image in ${currentChat.name}`);
+                            }
+                        });
+                    }
+                });
             }
         }
 
@@ -2150,10 +2399,7 @@
             }
             
             // Show chat area on mobile
-            if (window.innerWidth <= 768) {
-                document.querySelectorAll('.chat-area').forEach(el => el.classList.remove('active'));
-                chatArea.classList.add('active');
-            }
+            chatArea.classList.add('active');
         }
 
         // Update chat header status
@@ -2544,6 +2790,7 @@
                         chatHeader.style.display = 'none';
                         chatMessages.style.display = 'none';
                         chatInput.style.display = 'none';
+                        chatArea.classList.remove('active');
                     })
                     .catch(error => {
                         console.error('Error blocking user:', error);
