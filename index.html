@@ -2013,6 +2013,9 @@
             chatInput.style.display = 'none';
             currentChat = null;
             renderChatList();
+            
+            // Show user profile and logout button again
+            document.querySelector('.header').style.display = 'flex';
         }
 
         // Handle typing indicator
@@ -2242,7 +2245,36 @@
                     profileName.textContent = userData.username;
                     profileAvatar.textContent = userData.username.charAt(0).toUpperCase();
                     profileAvatar.style.backgroundColor = getAvatarColor(userData.username);
+                    
+                    // Update all messages with the new username
+                    updateMessagesWithNewUsername(userData.username);
                 }
+            });
+        }
+        
+        // Update all messages with new username when username changes
+        function updateMessagesWithNewUsername(newUsername) {
+            // Update private chats
+            friends.forEach(friend => {
+                const chatId = generateChatId(currentUser.uid, friend.id);
+                database.ref(`chats/${chatId}/messages`).once('value').then(snapshot => {
+                    snapshot.forEach(messageSnapshot => {
+                        if (messageSnapshot.val().senderId === currentUser.uid) {
+                            database.ref(`chats/${chatId}/messages/${messageSnapshot.key}/senderName`).set(newUsername);
+                        }
+                    });
+                });
+            });
+            
+            // Update group chats
+            groups.forEach(group => {
+                database.ref(`groupChats/${group.id}/messages`).once('value').then(snapshot => {
+                    snapshot.forEach(messageSnapshot => {
+                        if (messageSnapshot.val().senderId === currentUser.uid) {
+                            database.ref(`groupChats/${group.id}/messages/${messageSnapshot.key}/senderName`).set(newUsername);
+                        }
+                    });
+                });
             });
         }
 
@@ -2325,6 +2357,9 @@
                     database.ref('notifications/' + currentUser.uid + '/' + snapshot.key).update({
                         read: true
                     });
+                    
+                    // Show in-app notification
+                    showNotification(notificationData.message);
                 }
             });
         }
@@ -2340,9 +2375,6 @@
             
             // Play sound
             notificationSound.play().catch(e => console.log('Notification sound error:', e));
-            
-            // Show in-app notification
-            showNotification(message);
         }
 
         // Load blocked users
@@ -2682,6 +2714,9 @@
             chatHeader.style.display = 'flex';
             chatMessages.style.display = 'block';
             chatInput.style.display = 'flex';
+            
+            // Hide the header in the sidebar
+            document.querySelector('.header').style.display = 'none';
             
             // Update chat header
             if (chat.type === 'private') {
