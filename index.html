@@ -557,7 +557,7 @@
             border-top: 1px solid #ddd;
         }
 
-        .attachment-btn, .send-btn {
+        .attachment-btn, .send-btn, .call-btn {
             background: none;
             border: none;
             color: var(--primary-color);
@@ -567,7 +567,7 @@
             transition: transform 0.2s;
         }
 
-        .attachment-btn:hover, .send-btn:hover {
+        .attachment-btn:hover, .send-btn:hover, .call-btn:hover {
             transform: scale(1.1);
         }
 
@@ -906,6 +906,7 @@
         .theme-options {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .theme-option {
@@ -1241,6 +1242,103 @@
             font-weight: bold;
         }
 
+        /* Call Modal */
+        .call-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .call-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .call-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--white-color);
+            font-size: 60px;
+            font-weight: bold;
+        }
+
+        .call-status {
+            color: white;
+            font-size: 18px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .call-buttons {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .call-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .call-button:hover {
+            transform: scale(1.1);
+        }
+
+        .accept-call {
+            background-color: var(--online-color);
+        }
+
+        .reject-call {
+            background-color: var(--offline-color);
+        }
+
+        .end-call {
+            background-color: var(--offline-color);
+        }
+
+        .call-button-icon {
+            color: white;
+            font-size: 30px;
+        }
+
+        /* Audio Elements */
+        #remoteAudio {
+            width: 100%;
+            max-width: 300px;
+            margin-bottom: 20px;
+            background-color: var(--white-color);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        #localAudio {
+            display: none;
+        }
+
         /* Responsive adjustments */
         @media (min-width: 768px) {
             .sidebar {
@@ -1376,6 +1474,9 @@
                 <button class="block-btn" id="block-user-btn" title="Block User">
                     <span class="material-icons">block</span>
                 </button>
+                <button class="call-btn" id="call-btn" title="Call">
+                    <span class="material-icons">call</span>
+                </button>
             </div>
 
             <div class="chat-messages" id="chat-messages" style="display: none;">
@@ -1444,6 +1545,12 @@
                     <div class="theme-option" data-theme="blue" style="background-color: #1976D2;"></div>
                     <div class="theme-option" data-theme="purple" style="background-color: #7B1FA2;"></div>
                     <div class="theme-option" data-theme="dark" style="background-color: #212121;"></div>
+                    <div class="theme-option" data-theme="red" style="background-color: #C62828;"></div>
+                    <div class="theme-option" data-theme="pink" style="background-color: #AD1457;"></div>
+                    <div class="theme-option" data-theme="indigo" style="background-color: #283593;"></div>
+                    <div class="theme-option" data-theme="teal" style="background-color: #00897B;"></div>
+                    <div class="theme-option" data-theme="orange" style="background-color: #EF6C00;"></div>
+                    <div class="theme-option" data-theme="brown" style="background-color: #5D4037;"></div>
                 </div>
             </div>
             
@@ -1484,6 +1591,37 @@
         <div>Uploading image...</div>
         <div class="progress-bar">
             <div class="progress-fill" id="progress-fill"></div>
+        </div>
+    </div>
+
+    <!-- Call Modal -->
+    <div class="call-modal" id="call-modal">
+        <div class="call-container">
+            <div class="call-avatar" id="call-avatar">U</div>
+            <div class="call-status" id="call-status">Calling...</div>
+            <audio id="remoteAudio" autoplay></audio>
+            <audio id="localAudio" muted autoplay></audio>
+            <div class="call-buttons">
+                <div class="call-button end-call" id="end-call-btn">
+                    <span class="material-icons call-button-icon">call_end</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Incoming Call Modal -->
+    <div class="call-modal" id="incoming-call-modal">
+        <div class="call-container">
+            <div class="call-avatar" id="incoming-call-avatar">U</div>
+            <div class="call-status" id="incoming-call-status">Incoming call from...</div>
+            <div class="call-buttons">
+                <div class="call-button accept-call" id="accept-call-btn">
+                    <span class="material-icons call-button-icon">call</span>
+                </div>
+                <div class="call-button reject-call" id="reject-call-btn">
+                    <span class="material-icons call-button-icon">call_end</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1577,6 +1715,18 @@
         const cancelUrlInput = document.getElementById('cancel-url-input');
         const confirmUrlInput = document.getElementById('confirm-url-input');
         const headerNotificationBadge = document.getElementById('header-notification-badge');
+        const callBtn = document.getElementById('call-btn');
+        const callModal = document.getElementById('call-modal');
+        const callAvatar = document.getElementById('call-avatar');
+        const callStatus = document.getElementById('call-status');
+        const remoteAudio = document.getElementById('remoteAudio');
+        const localAudio = document.getElementById('localAudio');
+        const endCallBtn = document.getElementById('end-call-btn');
+        const incomingCallModal = document.getElementById('incoming-call-modal');
+        const incomingCallAvatar = document.getElementById('incoming-call-avatar');
+        const incomingCallStatus = document.getElementById('incoming-call-status');
+        const acceptCallBtn = document.getElementById('accept-call-btn');
+        const rejectCallBtn = document.getElementById('reject-call-btn');
 
         // App State
         let currentUser = null;
@@ -1593,6 +1743,21 @@
         let typingTimeout = null;
         let isTyping = false;
         let unreadNotificationsCount = 0;
+        
+        // WebRTC variables
+        let peerConnection;
+        let localStream;
+        let callRef;
+        let callerId;
+        let callId;
+        let isCaller = false;
+        const servers = {
+            iceServers: [
+                {
+                    urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302']
+                }
+            ]
+        };
 
         // Themes configuration
         const themes = {
@@ -1644,6 +1809,78 @@
                 '--white-color': '#212121',
                 '--gray-color': '#424242',
                 '--dark-color': '#E0E0E0'
+            },
+            red: {
+                '--primary-color': '#E53935',
+                '--primary-dark': '#C62828',
+                '--secondary-color': '#EF5350',
+                '--light-color': '#FFCDD2',
+                '--background-color': '#FFEBEE',
+                '--header-color': '#C62828',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#FFEBEE'
+            },
+            pink: {
+                '--primary-color': '#D81B60',
+                '--primary-dark': '#AD1457',
+                '--secondary-color': '#EC407A',
+                '--light-color': '#F8BBD0',
+                '--background-color': '#FCE4EC',
+                '--header-color': '#AD1457',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#FCE4EC'
+            },
+            indigo: {
+                '--primary-color': '#3949AB',
+                '--primary-dark': '#283593',
+                '--secondary-color': '#5C6BC0',
+                '--light-color': '#C5CAE9',
+                '--background-color': '#E8EAF6',
+                '--header-color': '#283593',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#E8EAF6'
+            },
+            teal: {
+                '--primary-color': '#00897B',
+                '--primary-dark': '#00695C',
+                '--secondary-color': '#26A69A',
+                '--light-color': '#B2DFDB',
+                '--background-color': '#E0F2F1',
+                '--header-color': '#00695C',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#E0F2F1'
+            },
+            orange: {
+                '--primary-color': '#FB8C00',
+                '--primary-dark': '#EF6C00',
+                '--secondary-color': '#FFA726',
+                '--light-color': '#FFE0B2',
+                '--background-color': '#FFF3E0',
+                '--header-color': '#EF6C00',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#FFF3E0'
+            },
+            brown: {
+                '--primary-color': '#6D4C41',
+                '--primary-dark': '#5D4037',
+                '--secondary-color': '#8D6E63',
+                '--light-color': '#D7CCC8',
+                '--background-color': '#EFEBE9',
+                '--header-color': '#5D4037',
+                '--text-color': '#333',
+                '--light-text': '#777',
+                '--white-color': '#fff',
+                '--gray-color': '#EFEBE9'
             }
         };
 
@@ -1671,6 +1908,20 @@
                 Notification.requestPermission().then(permission => {
                     console.log('Notification permission:', permission);
                 });
+            }
+
+            // Request microphone permission for calls
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        console.log('Microphone access granted');
+                        localStream = stream;
+                        localAudio.srcObject = stream;
+                    })
+                    .catch(error => {
+                        console.error('Error accessing microphone:', error);
+                        showNotification('Microphone access is required for calls');
+                    });
             }
 
             // Event Listeners
@@ -1716,17 +1967,13 @@
             updateUsernameBtn.addEventListener('click', updateUsername);
             blockUserBtn.addEventListener('click', blockCurrentUser);
             closePreview.addEventListener('click', () => imagePreviewModal.style.display = 'none');
-            backButton.addEventListener('click', () => {
-                chatArea.classList.remove('active');
-                welcomeScreen.style.display = 'flex';
-                chatHeader.style.display = 'none';
-                chatMessages.style.display = 'none';
-                chatInput.style.display = 'none';
-                currentChat = null;
-                renderChatList();
-            });
+            backButton.addEventListener('click', backToChatList);
             cancelUrlInput.addEventListener('click', () => urlInputModal.style.display = 'none');
             confirmUrlInput.addEventListener('click', sendImageFromUrl);
+            callBtn.addEventListener('click', startCall);
+            endCallBtn.addEventListener('click', endCall);
+            acceptCallBtn.addEventListener('click', acceptCall);
+            rejectCallBtn.addEventListener('click', rejectCall);
 
             // Theme selection
             themeOptions.forEach(option => {
@@ -1755,6 +2002,17 @@
                     document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
                 });
             });
+        }
+
+        // Back to chat list
+        function backToChatList() {
+            chatArea.classList.remove('active');
+            welcomeScreen.style.display = 'flex';
+            chatHeader.style.display = 'none';
+            chatMessages.style.display = 'none';
+            chatInput.style.display = 'none';
+            currentChat = null;
+            renderChatList();
         }
 
         // Handle typing indicator
@@ -1875,6 +2133,7 @@
                     listenForFriendRequests();
                     loadBlockedUsers();
                     listenForNotifications();
+                    listenForCalls();
                 } else {
                     // No user is signed in
                     authContainer.style.display = 'flex';
@@ -1923,6 +2182,9 @@
                     messageListeners[chatId]();
                 });
                 messageListeners = {};
+
+                // End any ongoing call
+                endCall();
 
                 // Update user status to offline
                 database.ref('users/' + currentUser.uid).update({
@@ -2428,6 +2690,7 @@
                 chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.friendName);
                 updateChatHeaderStatus(chat);
                 blockUserBtn.style.display = 'block';
+                callBtn.style.display = 'block';
                 typingIndicator.style.display = 'none';
             } else {
                 chatHeaderName.textContent = chat.name;
@@ -2435,6 +2698,7 @@
                 chatHeaderAvatar.style.backgroundColor = getAvatarColor(chat.name);
                 chatHeaderStatus.textContent = 'Group';
                 blockUserBtn.style.display = 'none';
+                callBtn.style.display = 'none';
                 typingIndicator.style.display = 'none';
             }
             
@@ -2833,12 +3097,7 @@
                     .then(() => {
                         showNotification(`${currentChat.friendName} has been blocked`);
                         // Close current chat
-                        currentChat = null;
-                        welcomeScreen.style.display = 'flex';
-                        chatHeader.style.display = 'none';
-                        chatMessages.style.display = 'none';
-                        chatInput.style.display = 'none';
-                        chatArea.classList.remove('active');
+                        backToChatList();
                     })
                     .catch(error => {
                         console.error('Error blocking user:', error);
@@ -3040,6 +3299,259 @@
                 console.error('Error updating username:', error);
                 showNotification('Failed to update username');
             });
+        }
+
+        // Call Functions
+        function listenForCalls() {
+            database.ref('calls/' + currentUser.uid).on('value', snapshot => {
+                const callData = snapshot.val();
+                
+                if (callData && callData.status === 'calling') {
+                    // Show incoming call modal
+                    showIncomingCall(callData.callerId, callData.callerName, callData.callId);
+                } else if (callData && callData.status === 'ended') {
+                    // End call if it's active
+                    if (callModal.style.display === 'flex') {
+                        endCall();
+                    }
+                    
+                    // Remove call data
+                    database.ref('calls/' + currentUser.uid).remove();
+                }
+            });
+        }
+
+        function showIncomingCall(callerId, callerName, incomingCallId) {
+            incomingCallAvatar.textContent = callerName.charAt(0).toUpperCase();
+            incomingCallAvatar.style.backgroundColor = getAvatarColor(callerName);
+            incomingCallStatus.textContent = `Incoming call from ${callerName}`;
+            incomingCallModal.style.display = 'flex';
+            
+            // Store call info
+            callerId = callerId;
+            callId = incomingCallId;
+        }
+
+        function startCall() {
+            if (!currentChat || currentChat.type !== 'private') return;
+            
+            if (!onlineUsers[currentChat.friendId]) {
+                showNotification('User is offline. Cannot start call.');
+                return;
+            }
+            
+            // Create call ID
+            callId = database.ref('calls').push().key;
+            isCaller = true;
+            
+            // Initialize peer connection
+            initializePeerConnection();
+            
+            // Show call modal
+            callAvatar.textContent = currentChat.friendName.charAt(0).toUpperCase();
+            callAvatar.style.backgroundColor = getAvatarColor(currentChat.friendName);
+            callStatus.textContent = `Calling ${currentChat.friendName}...`;
+            callModal.style.display = 'flex';
+            
+            // Create call in Firebase
+            const callData = {
+                callerId: currentUser.uid,
+                callerName: userName.textContent,
+                receiverId: currentChat.friendId,
+                callId: callId,
+                status: 'calling',
+                timestamp: Date.now()
+            };
+            
+            const updates = {};
+            updates[`calls/${currentChat.friendId}`] = callData;
+            updates[`calls/${currentUser.uid}`] = {
+                status: 'active',
+                callId: callId
+            };
+            
+            database.ref().update(updates)
+                .catch(error => {
+                    console.error('Error creating call:', error);
+                    showNotification('Failed to start call');
+                    endCall();
+                });
+        }
+
+        function acceptCall() {
+            incomingCallModal.style.display = 'none';
+            callModal.style.display = 'flex';
+            callAvatar.textContent = callerId === currentUser.uid ? userName.textContent.charAt(0).toUpperCase() : '';
+            callStatus.textContent = 'Call in progress';
+            
+            // Initialize peer connection
+            initializePeerConnection();
+            
+            // Update call status
+            database.ref(`calls/${currentUser.uid}`).update({
+                status: 'active'
+            });
+        }
+
+        function rejectCall() {
+            incomingCallModal.style.display = 'none';
+            
+            // Update call status to rejected
+            database.ref(`calls/${callerId}`).update({
+                status: 'rejected'
+            });
+            
+            // Remove call data
+            database.ref('calls/' + currentUser.uid).remove();
+        }
+
+        function endCall() {
+            callModal.style.display = 'none';
+            
+            // Close peer connection
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            
+            // Stop local stream
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+            }
+            
+            // Update call status to ended
+            if (callId) {
+                const updates = {};
+                updates[`calls/${currentUser.uid}`] = { status: 'ended' };
+                
+                if (isCaller && currentChat) {
+                    updates[`calls/${currentChat.friendId}`] = { status: 'ended' };
+                } else if (callerId) {
+                    updates[`calls/${callerId}`] = { status: 'ended' };
+                }
+                
+                database.ref().update(updates)
+                    .then(() => {
+                        // Remove call data after a delay
+                        setTimeout(() => {
+                            database.ref('calls/' + currentUser.uid).remove();
+                            if (isCaller && currentChat) {
+                                database.ref('calls/' + currentChat.friendId).remove();
+                            } else if (callerId) {
+                                database.ref('calls/' + callerId).remove();
+                            }
+                        }, 1000);
+                    });
+            }
+            
+            // Reset call variables
+            callId = null;
+            callerId = null;
+            isCaller = false;
+            
+            // Reinitialize microphone access
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                    .then(stream => {
+                        localStream = stream;
+                        localAudio.srcObject = stream;
+                    })
+                    .catch(error => {
+                        console.error('Error reinitializing microphone:', error);
+                    });
+            }
+        }
+
+        function initializePeerConnection() {
+            peerConnection = new RTCPeerConnection(servers);
+            
+            // Add local stream to connection
+            if (localStream) {
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+            }
+            
+            // Listen for ICE candidates
+            peerConnection.onicecandidate = event => {
+                if (event.candidate) {
+                    // Send ICE candidate to the other peer
+                    database.ref(`calls/${callId}/candidates/${currentUser.uid}`).push({
+                        candidate: event.candidate
+                    });
+                }
+            };
+            
+            // Listen for remote stream
+            peerConnection.ontrack = event => {
+                remoteAudio.srcObject = event.streams[0];
+            };
+            
+            // Listen for ICE candidates from the other peer
+            database.ref(`calls/${callId}/candidates/${isCaller ? currentChat.friendId : callerId}`).on('child_added', snapshot => {
+                const candidate = snapshot.val().candidate;
+                peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+            });
+            
+            if (isCaller) {
+                // Create offer
+                peerConnection.createOffer()
+                    .then(offer => {
+                        return peerConnection.setLocalDescription(offer);
+                    })
+                    .then(() => {
+                        // Send offer to the other peer
+                        database.ref(`calls/${callId}/offer`).set({
+                            sdp: peerConnection.localDescription.sdp,
+                            type: peerConnection.localDescription.type
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error creating offer:', error);
+                        showNotification('Failed to start call');
+                        endCall();
+                    });
+            } else {
+                // Listen for offer
+                database.ref(`calls/${callId}/offer`).once('value').then(snapshot => {
+                    const offer = snapshot.val();
+                    if (offer) {
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(offer))
+                            .then(() => {
+                                // Create answer
+                                return peerConnection.createAnswer();
+                            })
+                            .then(answer => {
+                                return peerConnection.setLocalDescription(answer);
+                            })
+                            .then(() => {
+                                // Send answer to the other peer
+                                database.ref(`calls/${callId}/answer`).set({
+                                    sdp: peerConnection.localDescription.sdp,
+                                    type: peerConnection.localDescription.type
+                                });
+                            })
+                            .catch(error => {
+                                console.error('Error creating answer:', error);
+                                showNotification('Failed to accept call');
+                                endCall();
+                            });
+                    }
+                });
+                
+                // Listen for answer (in case we're the caller)
+                database.ref(`calls/${callId}/answer`).once('value').then(snapshot => {
+                    const answer = snapshot.val();
+                    if (answer) {
+                        peerConnection.setRemoteDescription(new RTCSessionDescription(answer))
+                            .catch(error => {
+                                console.error('Error setting remote description:', error);
+                                showNotification('Call failed');
+                                endCall();
+                            });
+                    }
+                });
+            }
         }
 
         // Initialize the app
