@@ -1224,6 +1224,23 @@
             font-size: 16px;
         }
 
+        /* Header Notification Badge */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
         /* Responsive adjustments */
         @media (min-width: 768px) {
             .sidebar {
@@ -1293,6 +1310,7 @@
                 <div class="user-info" id="user-profile-btn">
                     <div class="user-avatar" id="user-avatar">U</div>
                     <div class="user-name" id="user-name">User</div>
+                    <div class="notification-badge" id="header-notification-badge" style="display: none;">0</div>
                 </div>
                 <button class="logout-btn" id="logout-button">
                     <span class="material-icons">logout</span>
@@ -1558,6 +1576,7 @@
         const urlInputField = document.getElementById('url-input-field');
         const cancelUrlInput = document.getElementById('cancel-url-input');
         const confirmUrlInput = document.getElementById('confirm-url-input');
+        const headerNotificationBadge = document.getElementById('header-notification-badge');
 
         // App State
         let currentUser = null;
@@ -1573,6 +1592,7 @@
         let messageListeners = {};
         let typingTimeout = null;
         let isTyping = false;
+        let unreadNotificationsCount = 0;
 
         // Themes configuration
         const themes = {
@@ -1698,6 +1718,12 @@
             closePreview.addEventListener('click', () => imagePreviewModal.style.display = 'none');
             backButton.addEventListener('click', () => {
                 chatArea.classList.remove('active');
+                welcomeScreen.style.display = 'flex';
+                chatHeader.style.display = 'none';
+                chatMessages.style.display = 'none';
+                chatInput.style.display = 'none';
+                currentChat = null;
+                renderChatList();
             });
             cancelUrlInput.addEventListener('click', () => urlInputModal.style.display = 'none');
             confirmUrlInput.addEventListener('click', sendImageFromUrl);
@@ -2005,6 +2031,28 @@
 
         // Listen for notifications
         function listenForNotifications() {
+            database.ref('notifications/' + currentUser.uid).on('value', snapshot => {
+                const notificationsData = snapshot.val();
+                unreadNotificationsCount = 0;
+                
+                if (notificationsData) {
+                    Object.keys(notificationsData).forEach(notificationId => {
+                        if (!notificationsData[notificationId].read) {
+                            unreadNotificationsCount++;
+                        }
+                    });
+                }
+                
+                // Update notification badge
+                if (unreadNotificationsCount > 0) {
+                    headerNotificationBadge.textContent = unreadNotificationsCount;
+                    headerNotificationBadge.style.display = 'flex';
+                } else {
+                    headerNotificationBadge.style.display = 'none';
+                }
+            });
+            
+            // Listen for new notifications
             database.ref('notifications/' + currentUser.uid).on('child_added', snapshot => {
                 const notificationData = snapshot.val();
                 if (!notificationData.read) {
