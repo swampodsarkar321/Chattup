@@ -30,6 +30,7 @@
             --header-color: #075E54;
             --text-color: #333;
             --light-text: #777;
+            --chat-bg-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
         }
 
         * {
@@ -407,6 +408,8 @@
             display: flex;
             flex-direction: column;
             background-color: var(--gray-color);
+            background-image: var(--chat-bg-image);
+            background-repeat: repeat;
             position: fixed;
             top: 0;
             left: 100%;
@@ -473,8 +476,6 @@
             padding: 20px;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
-            background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
-            background-repeat: repeat;
         }
 
         .message {
@@ -1339,6 +1340,76 @@
             display: none;
         }
 
+        /* Message Reactions */
+        .reaction-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+            gap: 5px;
+        }
+
+        .reaction {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 2px 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .reaction:hover {
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        .reaction-options {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background-color: white;
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+            display: none;
+        }
+
+        .reaction-option {
+            font-size: 18px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .reaction-option:hover {
+            transform: scale(1.2);
+        }
+
+        /* Chat Background Options */
+        .bg-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .bg-option {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            cursor: pointer;
+            background-size: cover;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .bg-option:hover {
+            transform: scale(1.05);
+        }
+
+        .bg-option.selected {
+            border-color: var(--primary-color);
+        }
+
         /* Responsive adjustments */
         @media (min-width: 768px) {
             .sidebar {
@@ -1554,6 +1625,18 @@
                 </div>
             </div>
             
+            <div class="profile-section">
+                <div class="profile-section-title">Chat Background</div>
+                <div class="bg-options">
+                    <div class="bg-option" data-bg="default" style="background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');"></div>
+                    <div class="bg-option" data-bg="solid" style="background-color: #ECE5DD;"></div>
+                    <div class="bg-option" data-bg="pattern1" style="background-image: url('https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png');"></div>
+                    <div class="bg-option" data-bg="pattern2" style="background-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_68698b7b80bf8a83a9c0c9a5d8b0f709.png');"></div>
+                    <div class="bg-option" data-bg="custom1" style="background-image: url('https://i.pinimg.com/originals/8f/ba/cb/8fbacbd464e996966eb9a9c981b5d3e9.jpg');"></div>
+                    <div class="bg-option" data-bg="custom2" style="background-image: url('https://i.pinimg.com/originals/6f/20/8e/6f208e8e5a9b05a6a7a7a5e5e5e5e5e5.jpg');"></div>
+                </div>
+            </div>
+            
             <div class="modal-buttons" style="margin-top: 20px;">
                 <button class="modal-button cancel-btn" id="close-profile-modal">Close</button>
             </div>
@@ -1727,6 +1810,7 @@
         const incomingCallStatus = document.getElementById('incoming-call-status');
         const acceptCallBtn = document.getElementById('accept-call-btn');
         const rejectCallBtn = document.getElementById('reject-call-btn');
+        const bgOptions = document.querySelectorAll('.bg-option');
 
         // App State
         let currentUser = null;
@@ -1743,6 +1827,8 @@
         let typingTimeout = null;
         let isTyping = false;
         let unreadNotificationsCount = 0;
+        let currentChatBg = 'default';
+        let reactingMessageId = null;
         
         // WebRTC variables
         let peerConnection;
@@ -1884,6 +1970,16 @@
             }
         };
 
+        // Chat background configurations
+        const chatBackgrounds = {
+            'default': "url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png')",
+            'solid': "none",
+            'pattern1': "url('https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png')",
+            'pattern2': "url('https://web.whatsapp.com/img/bg-chat-tile-light_68698b7b80bf8a83a9c0c9a5d8b0f709.png')",
+            'custom1': "url('https://i.pinimg.com/originals/8f/ba/cb/8fbacbd464e996966eb9a9c981b5d3e9.jpg')",
+            'custom2': "url('https://i.pinimg.com/originals/6f/20/8e/6f208e8e5a9b05a6a7a7a5e5e5e5e5e5.jpg')"
+        };
+
         // Initialize the app
         function init() {
             // Hide loading screen after 2 seconds (simulate loading)
@@ -1992,6 +2088,23 @@
                 });
             });
 
+            // Chat background selection
+            bgOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    bgOptions.forEach(opt => opt.classList.remove('selected'));
+                    option.classList.add('selected');
+                    currentChatBg = option.dataset.bg;
+                    applyChatBackground(currentChatBg);
+                    
+                    // Save background preference
+                    if (currentUser) {
+                        database.ref('users/' + currentUser.uid).update({
+                            chatBackground: currentChatBg
+                        });
+                    }
+                });
+            });
+
             // Tab switching
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
@@ -2002,6 +2115,11 @@
                     document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
                 });
             });
+        }
+
+        // Apply chat background
+        function applyChatBackground(bg) {
+            document.documentElement.style.setProperty('--chat-bg-image', chatBackgrounds[bg] || chatBackgrounds['default']);
         }
 
         // Back to chat list
@@ -2162,6 +2280,7 @@
                         online: true,
                         lastSeen: Date.now(),
                         theme: 'default',
+                        chatBackground: 'default',
                         // Add a unique identifier based on username and timestamp
                         userIdentifier: `${username.toLowerCase()}_${Date.now()}`
                     });
@@ -2222,6 +2341,18 @@
                         themeOptions.forEach(opt => {
                             opt.classList.remove('selected');
                             if (opt.dataset.theme === currentTheme) {
+                                opt.classList.add('selected');
+                            }
+                        });
+                    }
+
+                    // Apply saved chat background
+                    if (userData.chatBackground) {
+                        currentChatBg = userData.chatBackground;
+                        applyChatBackground(currentChatBg);
+                        bgOptions.forEach(opt => {
+                            opt.classList.remove('selected');
+                            if (opt.dataset.bg === currentChatBg) {
                                 opt.classList.add('selected');
                             }
                         });
@@ -2837,7 +2968,92 @@
                 <div class="message-time">${time}</div>
             `;
             
+            // Add reaction container if there are reactions
+            if (message.reactions) {
+                const reactionContainer = document.createElement('div');
+                reactionContainer.className = 'reaction-container';
+                
+                Object.entries(message.reactions).forEach(([emoji, reactors]) => {
+                    const reaction = document.createElement('span');
+                    reaction.className = 'reaction';
+                    reaction.textContent = emoji;
+                    if (reactors.includes(currentUser.uid)) {
+                        reaction.style.backgroundColor = 'rgba(0,0,0,0.2)';
+                    }
+                    reaction.addEventListener('click', () => toggleReaction(message.id, emoji, chatType));
+                    reactionContainer.appendChild(reaction);
+                });
+                
+                messageDiv.appendChild(reactionContainer);
+            }
+            
+            // Add reaction option for long press
+            messageDiv.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showReactionOptions(message.id, chatType, e);
+            });
+            
             chatMessages.appendChild(messageDiv);
+        }
+
+        // Toggle reaction on a message
+        function toggleReaction(messageId, emoji, chatType) {
+            const path = chatType === 'private' ? 
+                `chats/${currentChat.id}/messages/${messageId}/reactions/${emoji}` : 
+                `groupChats/${currentChat.id}/messages/${messageId}/reactions/${emoji}`;
+                
+            database.ref(path).transaction((reactors) => {
+                if (!reactors) {
+                    return [currentUser.uid];
+                }
+                
+                if (reactors.includes(currentUser.uid)) {
+                    if (reactors.length === 1) {
+                        return null; // Remove reaction if no one else reacted
+                    }
+                    return reactors.filter(id => id !== currentUser.uid);
+                } else {
+                    return [...reactors, currentUser.uid];
+                }
+            });
+        }
+
+        // Show reaction options for a message
+        function showReactionOptions(messageId, chatType, event) {
+            // Remove any existing reaction options
+            document.querySelectorAll('.reaction-options').forEach(el => el.remove());
+            
+            const reactionOptions = document.createElement('div');
+            reactionOptions.className = 'reaction-options';
+            reactionOptions.style.display = 'flex';
+            reactionOptions.style.position = 'absolute';
+            reactionOptions.style.bottom = `${chatMessages.offsetHeight - event.clientY + 50}px`;
+            reactionOptions.style.right = `${chatMessages.offsetWidth - event.clientX}px`;
+            
+            const emojis = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
+            emojis.forEach(emoji => {
+                const option = document.createElement('span');
+                option.className = 'reaction-option';
+                option.textContent = emoji;
+                option.addEventListener('click', () => {
+                    toggleReaction(messageId, emoji, chatType);
+                    reactionOptions.remove();
+                });
+                reactionOptions.appendChild(option);
+            });
+            
+            chatMessages.appendChild(reactionOptions);
+            
+            // Close reaction options when clicking elsewhere
+            setTimeout(() => {
+                const closeHandler = (e) => {
+                    if (!reactionOptions.contains(e.target)) {
+                        reactionOptions.remove();
+                        document.removeEventListener('click', closeHandler);
+                    }
+                };
+                document.addEventListener('click', closeHandler);
+            }, 100);
         }
 
         // Show image preview in modal
