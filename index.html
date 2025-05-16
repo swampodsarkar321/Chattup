@@ -31,6 +31,15 @@
             --text-color: #333;
             --light-text: #777;
             --chat-bg-image: url('https://web.whatsapp.com/img/bg-chat-tile-light_a4be512e7195b6b733d9110b408f075d.png');
+            --dark-primary-color: #075E54;
+            --dark-primary-dark: #054D44;
+            --dark-secondary-color: #128C7E;
+            --dark-light-color: #056162;
+            --dark-gray-color: #0D141E;
+            --dark-white-color: #1F2C34;
+            --dark-text-color: #E9EDEF;
+            --dark-light-text: #8696A0;
+            --dark-chat-bg-image: url('https://web.whatsapp.com/img/bg-chat-tile-dark_04fcacde539c58cca6745483d4858c52.png');
         }
 
         * {
@@ -48,6 +57,21 @@
             flex-direction: column;
             color: var(--text-color);
             touch-action: manipulation;
+        }
+
+        /* Dark mode */
+        body.dark-mode {
+            background-color: var(--dark-gray-color);
+            color: var(--dark-text-color);
+            --primary-color: var(--dark-primary-color);
+            --primary-dark: var(--dark-primary-dark);
+            --secondary-color: var(--dark-secondary-color);
+            --light-color: var(--dark-light-color);
+            --gray-color: var(--dark-gray-color);
+            --white-color: var(--dark-white-color);
+            --text-color: var(--dark-text-color);
+            --light-text: var(--dark-light-text);
+            --chat-bg-image: var(--dark-chat-bg-image);
         }
 
         /* Desktop warning */
@@ -279,6 +303,8 @@
             margin-right: 10px;
             color: var(--white-color);
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
         }
 
         .user-name {
@@ -350,6 +376,8 @@
             margin-right: 12px;
             color: var(--white-color);
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
         }
 
         .chat-info {
@@ -452,6 +480,8 @@
             margin-right: 10px;
             color: var(--white-color);
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
         }
 
         .chat-header-info {
@@ -881,6 +911,8 @@
             color: var(--white-color);
             font-size: 40px;
             font-weight: bold;
+            background-size: cover;
+            background-position: center;
         }
 
         .profile-name {
@@ -1410,6 +1442,124 @@
             border-color: var(--primary-color);
         }
 
+        /* Message Context Menu */
+        .message-context-menu {
+            position: absolute;
+            background-color: var(--white-color);
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .context-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .context-menu-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Read Receipts */
+        .read-receipts {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-top: 3px;
+            justify-content: flex-end;
+        }
+
+        .read-receipt {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        /* Message Reply */
+        .message-reply {
+            background-color: rgba(0,0,0,0.05);
+            border-left: 3px solid var(--primary-color);
+            padding: 5px 10px;
+            margin-bottom: 5px;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+
+        .reply-sender {
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Group Admin Controls */
+        .group-admin-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .admin-control-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Dark Mode Toggle */
+        .dark-mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        /* File Sharing */
+        .file-message {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 8px;
+            margin-top: 5px;
+        }
+
+        .file-icon {
+            font-size: 24px;
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
         /* Responsive adjustments */
         @media (min-width: 768px) {
             .sidebar {
@@ -1499,7 +1649,7 @@
                 </div>
 
                 <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Search or start new chat">
+                    <input type="text" class="search-input" placeholder="Search or start new chat" id="chat-search-input">
                 </div>
 
                 <div class="chat-list" id="chat-list">
@@ -1558,7 +1708,7 @@
                 <button class="attachment-btn" id="attachment-btn">
                     <span class="material-icons">attach_file</span>
                 </button>
-                <input type="file" id="file-input" style="display: none;" accept="image/*">
+                <input type="file" id="file-input" style="display: none;" accept="image/*, .pdf, .doc, .docx, .txt">
                 <textarea class="message-input" id="message-input" placeholder="Type a message"></textarea>
                 <button class="send-btn" id="send-button">
                     <span class="material-icons">send</span>
@@ -1637,6 +1787,12 @@
                 </div>
             </div>
             
+            <div class="profile-section">
+                <div class="profile-section-title">Profile Picture</div>
+                <input type="file" id="profile-pic-input" accept="image/*" style="display: none;">
+                <button class="modal-button confirm-btn" id="change-profile-pic-btn" style="width: 100%; margin-top: 10px;">Change Profile Picture</button>
+            </div>
+            
             <div class="modal-buttons" style="margin-top: 20px;">
                 <button class="modal-button cancel-btn" id="close-profile-modal">Close</button>
             </div>
@@ -1706,6 +1862,27 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Message Context Menu -->
+    <div class="message-context-menu" id="message-context-menu">
+        <div class="context-menu-item" id="reply-message-btn">
+            <span class="material-icons">reply</span>
+            <span>Reply</span>
+        </div>
+        <div class="context-menu-item" id="edit-message-btn">
+            <span class="material-icons">edit</span>
+            <span>Edit</span>
+        </div>
+        <div class="context-menu-item" id="delete-message-btn">
+            <span class="material-icons">delete</span>
+            <span>Delete</span>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="dark-mode-toggle" id="dark-mode-toggle">
+        <span class="material-icons" id="dark-mode-icon">brightness_4</span>
     </div>
 
     <script>
@@ -1811,6 +1988,15 @@
         const acceptCallBtn = document.getElementById('accept-call-btn');
         const rejectCallBtn = document.getElementById('reject-call-btn');
         const bgOptions = document.querySelectorAll('.bg-option');
+        const messageContextMenu = document.getElementById('message-context-menu');
+        const replyMessageBtn = document.getElementById('reply-message-btn');
+        const editMessageBtn = document.getElementById('edit-message-btn');
+        const deleteMessageBtn = document.getElementById('delete-message-btn');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const darkModeIcon = document.getElementById('dark-mode-icon');
+        const chatSearchInput = document.getElementById('chat-search-input');
+        const profilePicInput = document.getElementById('profile-pic-input');
+        const changeProfilePicBtn = document.getElementById('change-profile-pic-btn');
 
         // App State
         let currentUser = null;
@@ -1829,6 +2015,11 @@
         let unreadNotificationsCount = 0;
         let currentChatBg = 'default';
         let reactingMessageId = null;
+        let darkMode = false;
+        let replyingToMessage = null;
+        let editingMessage = null;
+        let contextMenuMessageId = null;
+        let contextMenuChatType = null;
         
         // WebRTC variables
         let peerConnection;
@@ -2036,7 +2227,7 @@
             
             attachmentBtn.addEventListener('click', () => {
                 // Show option to upload image or enter URL
-                if (confirm('Choose image source:\n\n1. Upload from device\n2. Enter image URL')) {
+                if (confirm('Choose file source:\n\n1. Upload from device\n2. Enter image URL')) {
                     fileInput.click();
                 } else {
                     urlInputField.value = '';
@@ -2070,6 +2261,83 @@
             endCallBtn.addEventListener('click', endCall);
             acceptCallBtn.addEventListener('click', acceptCall);
             rejectCallBtn.addEventListener('click', rejectCall);
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+            chatSearchInput.addEventListener('input', searchChats);
+            changeProfilePicBtn.addEventListener('click', () => profilePicInput.click());
+            profilePicInput.addEventListener('change', uploadProfilePicture);
+
+            // Message context menu
+            replyMessageBtn.addEventListener('click', () => {
+                if (contextMenuMessageId && currentChat) {
+                    const path = currentChat.type === 'private' ? 
+                        `chats/${currentChat.id}/messages/${contextMenuMessageId}` : 
+                        `groupChats/${currentChat.id}/messages/${contextMenuMessageId}`;
+                    
+                    database.ref(path).once('value').then(snapshot => {
+                        const message = snapshot.val();
+                        replyingToMessage = {
+                            id: contextMenuMessageId,
+                            senderName: message.senderName,
+                            content: message.content,
+                            type: message.type
+                        };
+                        messageInput.placeholder = `Replying to ${message.senderName}`;
+                        messageInput.focus();
+                        messageContextMenu.style.display = 'none';
+                    });
+                }
+            });
+
+            editMessageBtn.addEventListener('click', () => {
+                if (contextMenuMessageId && currentChat) {
+                    const path = currentChat.type === 'private' ? 
+                        `chats/${currentChat.id}/messages/${contextMenuMessageId}` : 
+                        `groupChats/${currentChat.id}/messages/${contextMenuMessageId}`;
+                    
+                    database.ref(path).once('value').then(snapshot => {
+                        const message = snapshot.val();
+                        if (message.senderId === currentUser.uid) {
+                            editingMessage = {
+                                id: contextMenuMessageId,
+                                chatType: currentChat.type,
+                                content: message.content
+                            };
+                            messageInput.value = message.content;
+                            messageInput.focus();
+                            messageContextMenu.style.display = 'none';
+                        }
+                    });
+                }
+            });
+
+            deleteMessageBtn.addEventListener('click', () => {
+                if (contextMenuMessageId && currentChat) {
+                    const path = currentChat.type === 'private' ? 
+                        `chats/${currentChat.id}/messages/${contextMenuMessageId}` : 
+                        `groupChats/${currentChat.id}/messages/${contextMenuMessageId}`;
+                    
+                    database.ref(path).once('value').then(snapshot => {
+                        const message = snapshot.val();
+                        if (message.senderId === currentUser.uid || (currentChat.type === 'group' && currentChat.adminId === currentUser.uid)) {
+                            if (confirm('Are you sure you want to delete this message?')) {
+                                database.ref(path).remove().then(() => {
+                                    showNotification('Message deleted');
+                                    messageContextMenu.style.display = 'none';
+                                });
+                            }
+                        } else {
+                            showNotification('You can only delete your own messages');
+                        }
+                    });
+                }
+            });
+
+            // Close context menu when clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (!messageContextMenu.contains(e.target)) {
+                    messageContextMenu.style.display = 'none';
+                }
+            });
 
             // Theme selection
             themeOptions.forEach(option => {
@@ -2115,6 +2383,120 @@
                     document.getElementById(`${tab.dataset.tab}-tab`).classList.add('active');
                 });
             });
+
+            // Message context menu on long press
+            chatMessages.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const messageElement = e.target.closest('.message');
+                if (messageElement) {
+                    const messageId = messageElement.dataset.messageId;
+                    if (messageId && currentChat) {
+                        contextMenuMessageId = messageId;
+                        contextMenuChatType = currentChat.type;
+                        
+                        // Position the context menu
+                        messageContextMenu.style.display = 'flex';
+                        messageContextMenu.style.top = `${e.clientY}px`;
+                        messageContextMenu.style.left = `${e.clientX}px`;
+                        
+                        // Check if user can edit/delete this message
+                        const path = currentChat.type === 'private' ? 
+                            `chats/${currentChat.id}/messages/${messageId}` : 
+                            `groupChats/${currentChat.id}/messages/${messageId}`;
+                        
+                        database.ref(path).once('value').then(snapshot => {
+                            const message = snapshot.val();
+                            if (message.senderId === currentUser.uid) {
+                                editMessageBtn.style.display = 'flex';
+                                deleteMessageBtn.style.display = 'flex';
+                            } else if (currentChat.type === 'group' && currentChat.adminId === currentUser.uid) {
+                                editMessageBtn.style.display = 'none';
+                                deleteMessageBtn.style.display = 'flex';
+                            } else {
+                                editMessageBtn.style.display = 'none';
+                                deleteMessageBtn.style.display = 'none';
+                            }
+                        });
+                    }
+                }
+            });
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            darkMode = !darkMode;
+            if (darkMode) {
+                document.body.classList.add('dark-mode');
+                darkModeIcon.textContent = 'brightness_7';
+            } else {
+                document.body.classList.remove('dark-mode');
+                darkModeIcon.textContent = 'brightness_4';
+            }
+            
+            // Save preference
+            if (currentUser) {
+                database.ref('users/' + currentUser.uid).update({
+                    darkMode: darkMode
+                });
+            }
+        }
+
+        // Search chats
+        function searchChats() {
+            const searchTerm = chatSearchInput.value.toLowerCase();
+            const chatItems = chatList.querySelectorAll('.chat-item');
+            
+            chatItems.forEach(item => {
+                const chatName = item.querySelector('.chat-name').textContent.toLowerCase();
+                const lastMessage = item.querySelector('.chat-last-message').textContent.toLowerCase();
+                
+                if (chatName.includes(searchTerm) || lastMessage.includes(searchTerm)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Upload profile picture
+        function uploadProfilePicture() {
+            const file = profilePicInput.files[0];
+            if (!file || !currentUser) return;
+            
+            // Show upload progress
+            uploadProgress.style.display = 'block';
+            progressFill.style.width = '0%';
+            
+            // Create a storage reference
+            const storageRef = storage.ref(`profile_pictures/${currentUser.uid}`);
+            const uploadTask = storageRef.put(file);
+            
+            // Listen for state changes, errors, and completion of the upload.
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressFill.style.width = `${progress}%`;
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error('Upload failed:', error);
+                    showNotification('Failed to upload profile picture');
+                    uploadProgress.style.display = 'none';
+                },
+                () => {
+                    // Handle successful uploads on complete
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        // Save the download URL to user's profile
+                        database.ref('users/' + currentUser.uid).update({
+                            profilePicture: downloadURL
+                        }).then(() => {
+                            showNotification('Profile picture updated');
+                            uploadProgress.style.display = 'none';
+                        });
+                    });
+                }
+            );
         }
 
         // Apply chat background
@@ -2130,6 +2512,9 @@
             chatMessages.style.display = 'none';
             chatInput.style.display = 'none';
             currentChat = null;
+            replyingToMessage = null;
+            editingMessage = null;
+            messageInput.placeholder = 'Type a message';
             renderChatList();
             
             // Show user profile and logout button again
@@ -2186,7 +2571,10 @@
                 senderName: userName.textContent,
                 content: imageUrl,
                 type: 'image',
-                timestamp: timestamp
+                timestamp: timestamp,
+                readBy: {
+                    [currentUser.uid]: true
+                }
             };
 
             if (currentChat.type === 'private') {
@@ -2281,6 +2669,7 @@
                         lastSeen: Date.now(),
                         theme: 'default',
                         chatBackground: 'default',
+                        darkMode: false,
                         // Add a unique identifier based on username and timestamp
                         userIdentifier: `${username.toLowerCase()}_${Date.now()}`
                     });
@@ -2358,6 +2747,23 @@
                         });
                     }
 
+                    // Apply dark mode
+                    if (userData.darkMode) {
+                        darkMode = userData.darkMode;
+                        if (darkMode) {
+                            document.body.classList.add('dark-mode');
+                            darkModeIcon.textContent = 'brightness_7';
+                        }
+                    }
+
+                    // Load profile picture if exists
+                    if (userData.profilePicture) {
+                        userAvatar.style.backgroundImage = `url(${userData.profilePicture})`;
+                        userAvatar.textContent = '';
+                        profileAvatar.style.backgroundImage = `url(${userData.profilePicture})`;
+                        profileAvatar.textContent = '';
+                    }
+
                     // Load friends and chats
                     loadFriends(userId);
                     loadGroups(userId);
@@ -2376,6 +2782,19 @@
                     profileName.textContent = userData.username;
                     profileAvatar.textContent = userData.username.charAt(0).toUpperCase();
                     profileAvatar.style.backgroundColor = getAvatarColor(userData.username);
+                    
+                    // Update profile picture if changed
+                    if (userData.profilePicture) {
+                        userAvatar.style.backgroundImage = `url(${userData.profilePicture})`;
+                        userAvatar.textContent = '';
+                        profileAvatar.style.backgroundImage = `url(${userData.profilePicture})`;
+                        profileAvatar.textContent = '';
+                    } else {
+                        userAvatar.style.backgroundImage = '';
+                        userAvatar.textContent = userData.username.charAt(0).toUpperCase();
+                        profileAvatar.style.backgroundImage = '';
+                        profileAvatar.textContent = userData.username.charAt(0).toUpperCase();
+                    }
                     
                     // Update all messages with the new username
                     updateMessagesWithNewUsername(userData.username);
@@ -2632,7 +3051,8 @@
                     Object.keys(groupsData).forEach(groupId => {
                         groups.push({
                             id: groupId,
-                            name: groupsData[groupId].name
+                            name: groupsData[groupId].name,
+                            adminId: groupsData[groupId].adminId || null
                         });
                         
                         // Load group chats
@@ -2667,7 +3087,8 @@
                             name: groupData.name,
                             lastMessage: groupData.lastMessage,
                             lastMessageTime: groupData.lastMessageTime,
-                            unreadCount: groupData[`unread_${currentUser.uid}`] || 0
+                            unreadCount: groupData[`unread_${currentUser.uid}`] || 0,
+                            adminId: groupData.adminId || null
                         };
                     } else {
                         // Add new group chat
@@ -2677,7 +3098,8 @@
                             name: groupData.name,
                             lastMessage: groupData.lastMessage,
                             lastMessageTime: groupData.lastMessageTime,
-                            unreadCount: groupData[`unread_${currentUser.uid}`] || 0
+                            unreadCount: groupData[`unread_${currentUser.uid}`] || 0,
+                            adminId: groupData.adminId || null
                         });
                     }
                     
@@ -2947,6 +3369,7 @@
             const isCurrentUser = message.senderId === currentUser.uid;
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
+            messageDiv.dataset.messageId = message.id;
             
             let messageContent;
             if (message.type === 'image') {
@@ -2956,6 +3379,30 @@
                         <img src="${message.content}" class="message-image" onclick="showImagePreview('${message.content}', '${message.senderName}', ${message.timestamp})">
                         <div class="message-image-overlay">${message.senderName}</div>
                     </div>
+                `;
+            } else if (message.type === 'file') {
+                // File message
+                const fileName = message.fileName || 'File';
+                const fileSize = message.fileSize ? formatFileSize(message.fileSize) : '';
+                messageContent = `
+                    <div class="file-message">
+                        <div class="file-icon">
+                            <span class="material-icons">insert_drive_file</span>
+                        </div>
+                        <div class="file-info">
+                            <div class="file-name">${fileName}</div>
+                            <div class="file-size">${fileSize}</div>
+                        </div>
+                    </div>
+                `;
+            } else if (message.replyTo) {
+                // Reply message
+                messageContent = `
+                    <div class="message-reply">
+                        <div class="reply-sender">${message.replyTo.senderName}</div>
+                        <div class="reply-content">${message.replyTo.content}</div>
+                    </div>
+                    ${message.content}
                 `;
             } else {
                 messageContent = message.content;
@@ -2967,6 +3414,23 @@
                 <div class="message-bubble">${messageContent}</div>
                 <div class="message-time">${time}</div>
             `;
+            
+            // Add read receipts if it's a private chat and message is sent by current user
+            if (chatType === 'private' && isCurrentUser && message.readBy) {
+                const readReceipts = document.createElement('div');
+                readReceipts.className = 'read-receipts';
+                
+                Object.keys(message.readBy).forEach(userId => {
+                    if (userId !== currentUser.uid) {
+                        const receipt = document.createElement('span');
+                        receipt.className = 'read-receipt';
+                        receipt.innerHTML = '✓ Read';
+                        readReceipts.appendChild(receipt);
+                    }
+                });
+                
+                messageDiv.appendChild(readReceipts);
+            }
             
             // Add reaction container if there are reactions
             if (message.reactions) {
@@ -2994,6 +3458,15 @@
             });
             
             chatMessages.appendChild(messageDiv);
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
 
         // Toggle reaction on a message
@@ -3065,18 +3538,30 @@
 
         // Send a message
         function sendMessage() {
-            const content = messageInput.value.trim();
-            if (!content && !fileInput.files[0]) return;
+            let content = messageInput.value.trim();
+            if (!content && !fileInput.files[0] && !replyingToMessage && !editingMessage) return;
             
             if (currentChat) {
                 const timestamp = Date.now();
-                const message = {
+                let message = {
                     senderId: currentUser.uid,
                     senderName: userName.textContent,
                     content: content,
                     type: 'text',
-                    timestamp: timestamp
+                    timestamp: timestamp,
+                    readBy: {
+                        [currentUser.uid]: true
+                    }
                 };
+                
+                // If replying to a message
+                if (replyingToMessage) {
+                    message.replyTo = {
+                        messageId: replyingToMessage.id,
+                        senderName: replyingToMessage.senderName,
+                        content: replyingToMessage.content
+                    };
+                }
                 
                 if (currentChat.type === 'private') {
                     // Private chat
@@ -3088,6 +3573,20 @@
                         lastMessageTime: timestamp,
                         [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
                     });
+                    
+                    // If editing an existing message
+                    if (editingMessage) {
+                        database.ref(`chats/${currentChat.id}/messages/${editingMessage.id}`).update({
+                            content: content,
+                            edited: true
+                        }).then(() => {
+                            messageInput.value = '';
+                            editingMessage = null;
+                            replyingToMessage = null;
+                            messageInput.placeholder = 'Type a message';
+                        });
+                        return;
+                    }
                     
                     // Add message
                     chatRef.child('messages').push(message);
@@ -3103,6 +3602,20 @@
                         lastMessage: `${userName.textContent}: ${content}`,
                         lastMessageTime: timestamp
                     });
+                    
+                    // If editing an existing message
+                    if (editingMessage) {
+                        database.ref(`groupChats/${currentChat.id}/messages/${editingMessage.id}`).update({
+                            content: content,
+                            edited: true
+                        }).then(() => {
+                            messageInput.value = '';
+                            editingMessage = null;
+                            replyingToMessage = null;
+                            messageInput.placeholder = 'Type a message';
+                        });
+                        return;
+                    }
                     
                     // Add message
                     groupRef.child('messages').push(message);
@@ -3121,6 +3634,9 @@
                 }
                 
                 messageInput.value = '';
+                replyingToMessage = null;
+                editingMessage = null;
+                messageInput.placeholder = 'Type a message';
             }
         }
 
@@ -3133,78 +3649,98 @@
             uploadProgress.style.display = 'block';
             progressFill.style.width = '0%';
             
-            // For demo purposes, we'll simulate upload progress
-            let progress = 0;
-            const interval = setInterval(() => {
-                progress += 10;
-                progressFill.style.width = `${progress}%`;
-                
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    
-                    // After "upload" completes, use a placeholder image URL
-                    // In a real app, you would use the Firebase Storage URL here
-                    const imageUrl = `https://picsum.photos/400/300?random=${Date.now()}`;
-                    
-                    const timestamp = Date.now();
-                    const message = {
-                        senderId: currentUser.uid,
-                        senderName: userName.textContent,
-                        content: imageUrl,
-                        type: 'image',
-                        timestamp: timestamp
-                    };
-                    
-                    if (currentChat.type === 'private') {
-                        // Private chat
-                        const chatRef = database.ref('chats/' + currentChat.id);
-                        
-                        // Update last message
-                        chatRef.update({
-                            lastMessage: '📷 Image',
-                            lastMessageTime: timestamp,
-                            [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
-                        });
-                        
-                        // Add message
-                        chatRef.child('messages').push(message);
-                        
-                        // Send notification
-                        sendNotification(currentChat.friendId, `${userName.textContent} sent an image`);
-                    } else {
-                        // Group chat
-                        const groupRef = database.ref('groupChats/' + currentChat.id);
-                        
-                        // Update last message
-                        groupRef.update({
-                            lastMessage: `${userName.textContent} sent an image`,
-                            lastMessageTime: timestamp
-                        });
-                        
-                        // Add message
-                        groupRef.child('messages').push(message);
-                        
-                        // Send notifications to all group members except sender
-                        database.ref(`userGroups/${currentUser.uid}/${currentChat.id}/members`).once('value').then(snapshot => {
-                            const members = snapshot.val();
-                            if (members) {
-                                Object.keys(members).forEach(memberId => {
-                                    if (memberId !== currentUser.uid) {
-                                        sendNotification(memberId, `${userName.textContent} sent an image in ${currentChat.name}`);
-                                    }
-                                });
+            // Check if it's an image or other file type
+            const isImage = file.type.startsWith('image/');
+            const fileType = isImage ? 'image' : 'file';
+            
+            // Create a storage reference
+            const storageRef = storage.ref(`${fileType}s/${currentUser.uid}/${file.name}`);
+            const uploadTask = storageRef.put(file);
+            
+            // Listen for state changes, errors, and completion of the upload.
+            uploadTask.on('state_changed',
+                (snapshot) => {
+                    // Progress monitoring
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    progressFill.style.width = `${progress}%`;
+                    uploadProgress.querySelector('div').textContent = `Uploading ${fileType}...`;
+                },
+                (error) => {
+                    // Handle unsuccessful uploads
+                    console.error('Upload failed:', error);
+                    showNotification(`Failed to upload ${fileType}`);
+                    uploadProgress.style.display = 'none';
+                },
+                () => {
+                    // Handle successful uploads on complete
+                    uploadTask.snapshot.ref.getDownloadURL().then((downloadURL) => {
+                        const timestamp = Date.now();
+                        let message = {
+                            senderId: currentUser.uid,
+                            senderName: userName.textContent,
+                            content: downloadURL,
+                            type: fileType,
+                            timestamp: timestamp,
+                            readBy: {
+                                [currentUser.uid]: true
                             }
-                        });
-                    }
-                    
-                    // Hide upload progress
-                    setTimeout(() => {
+                        };
+                        
+                        // Add file info for non-image files
+                        if (fileType === 'file') {
+                            message.fileName = file.name;
+                            message.fileSize = file.size;
+                            message.fileType = file.type;
+                        }
+                        
+                        if (currentChat.type === 'private') {
+                            // Private chat
+                            const chatRef = database.ref('chats/' + currentChat.id);
+                            
+                            // Update last message
+                            chatRef.update({
+                                lastMessage: fileType === 'image' ? '📷 Image' : '📄 File',
+                                lastMessageTime: timestamp,
+                                [`unread_${currentChat.friendId}`]: (currentChat.unreadCount || 0) + 1
+                            });
+                            
+                            // Add message
+                            chatRef.child('messages').push(message);
+                            
+                            // Send notification
+                            sendNotification(currentChat.friendId, `${userName.textContent} sent a ${fileType}`);
+                        } else {
+                            // Group chat
+                            const groupRef = database.ref('groupChats/' + currentChat.id);
+                            
+                            // Update last message
+                            groupRef.update({
+                                lastMessage: `${userName.textContent} sent a ${fileType}`,
+                                lastMessageTime: timestamp
+                            });
+                            
+                            // Add message
+                            groupRef.child('messages').push(message);
+                            
+                            // Send notifications to all group members except sender
+                            database.ref(`userGroups/${currentUser.uid}/${currentChat.id}/members`).once('value').then(snapshot => {
+                                const members = snapshot.val();
+                                if (members) {
+                                    Object.keys(members).forEach(memberId => {
+                                        if (memberId !== currentUser.uid) {
+                                            sendNotification(memberId, `${userName.textContent} sent a ${fileType} in ${currentChat.name}`);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                        
+                        // Hide upload progress
                         uploadProgress.style.display = 'none';
-                    }, 1000);
-                    
-                    fileInput.value = '';
+                        fileInput.value = '';
+                    });
                 }
-            }, 200);
+            );
         }
 
         // Send friend request
@@ -3424,13 +3960,15 @@
             updates[`groups/${groupId}`] = {
                 name: groupName,
                 createdBy: currentUser.uid,
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                adminId: currentUser.uid
             };
             
             // Add group to each member's userGroups
             members.forEach(memberId => {
                 updates[`userGroups/${memberId}/${groupId}`] = {
-                    name: groupName
+                    name: groupName,
+                    adminId: currentUser.uid
                 };
             });
             
@@ -3440,7 +3978,8 @@
                 members: members.reduce((acc, memberId) => {
                     acc[memberId] = true;
                     return acc;
-                }, {})
+                }, {}),
+                adminId: currentUser.uid
             };
             
             database.ref().update(updates)
@@ -3458,6 +3997,16 @@
         function markMessagesAsRead(chatId, chatType) {
             if (chatType === 'private') {
                 database.ref(`chats/${chatId}/unread_${currentUser.uid}`).set(0);
+                
+                // Update read receipts for messages
+                database.ref(`chats/${chatId}/messages`).once('value').then(snapshot => {
+                    snapshot.forEach(messageSnapshot => {
+                        const message = messageSnapshot.val();
+                        if (message.senderId !== currentUser.uid && (!message.readBy || !message.readBy[currentUser.uid])) {
+                            database.ref(`chats/${chatId}/messages/${messageSnapshot.key}/readBy/${currentUser.uid}`).set(true);
+                        }
+                    });
+                });
             } else {
                 database.ref(`groupChats/${chatId}/unread_${currentUser.uid}`).set(0);
             }
